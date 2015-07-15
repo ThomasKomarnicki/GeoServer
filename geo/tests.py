@@ -7,7 +7,10 @@ from serializers import LocationSerializer, LocationGuessSerializer
 
 
 class GeoTestCases(TestCase):
+
+
     def setUp(self):
+
 
         # assumes user with id == 2
 
@@ -26,6 +29,8 @@ class GeoTestCases(TestCase):
         self._test_add_location({"user": user.id, "lat": 10, "lon": 10})
         self._test_add_location({"user": user.id, "lat": 200, "lon": 200})
         self._test_add_location({})
+
+        self._test_get_location()
 
     def _test_create_user(self):
         client = APIClient()
@@ -90,6 +95,14 @@ class GeoTestCases(TestCase):
         else:
             self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertIn('error', response.data)
+
+    def _test_get_location(self):
+
+        request = self.client.get('/locations/&id='+Location.objects.order_by('?').first())
+
+        self.assertTrue(request.status_code == 200)
+
+
 
     # def _test_location_guess(self):
     #     client = APIClient()
