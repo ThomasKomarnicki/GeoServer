@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.db import models
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.db.models import Avg, Min
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=False)
@@ -33,22 +34,28 @@ class UserSerializer(serializers.ModelSerializer):
         elif User.objects.filter(email=data['email']).exists():
             serializers.ValidationError("user with email exists", 3)
 
-
-
-
         return data
+
 
 class LocationSerializer(serializers.ModelSerializer):
 
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    average_guess_distance = serializers.IntegerField(required=False)
-    best_guess_distance = serializers.IntegerField(required=False)
+    # average_guess_distance = serializers.IntegerField(required=False)
+    # best_guess_distance = serializers.IntegerField(required=False)
+    average_guess_distance = serializers.ReadOnlyField(source='_get_average')
+    best_guess_distance = serializers.ReadOnlyField(source='_get_best')
     lat = serializers.DecimalField(max_value=90, min_value=-90, max_digits=15, decimal_places=8)
     lon = serializers.DecimalField(max_value=180, min_value=-180, max_digits=15, decimal_places=8)
 
     class Meta:
         model = Location
-        fields = ('lat', 'lon', 'user', 'average_guess_distance', 'best_guess_distance')
+        # fields = ('lat', 'lon', 'user', 'average_guess_distance', 'best_guess_distance')
+
+    def _get_average(self):
+        return LocationGuess.objects.aggregate(Avg('distance'))
+
+    def _get_best(self):
+        return Location.objects.all().aggregate(Min('distance'))
 
 
 class LocationGuessSerializer(serializers.ModelSerializer):

@@ -11,8 +11,15 @@ from rest_framework import serializers
 
 class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
 
-    queryset = Location.objects.all()
     serializer_class = LocationSerializer
+    queryset = Location.objects.all()
+
+    # def get_queryset(self):
+    #     queryset = Location.objects.all()
+    #     location_id = self.request.query_params.get('id', None)
+    #     if location_id is not None:
+    #         queryset = queryset.filter(id=location_id)
+    #     return queryset
 
     def create(self, request):
 
@@ -125,3 +132,6 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         location = Location.get_new_location(user_id)
         location_serializer = LocationSerializer(location)
         return Response()
+
+    @detail_route(methods=['get'], url_path='locationGuesses')
+    def guess(self, request, user_id=None):

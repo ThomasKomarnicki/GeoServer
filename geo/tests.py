@@ -8,9 +8,7 @@ from serializers import LocationSerializer, LocationGuessSerializer
 
 class GeoTestCases(TestCase):
 
-
     def setUp(self):
-
 
         # assumes user with id == 2
 
@@ -98,35 +96,13 @@ class GeoTestCases(TestCase):
 
     def _test_get_location(self):
 
-        request = self.client.get('/locations/&id='+Location.objects.order_by('?').first())
+        request = self.client.get('/locations/'+str(Location.objects.order_by('?').first().id)+"/")
+        # print request.status_code
 
         self.assertTrue(request.status_code == 200)
 
-
-
-    # def _test_location_guess(self):
-    #     client = APIClient()
-    #
-    #     # print "printing users"
-    #     # print User.objects.all()
-    #
-    #     user = User.objects.order_by('?').first()
-    #
-    #     last_current_location = int(user.current_location)
-    #
-    #     # print "user before location guess"
-    #     # print user
-    #
-    #     response = client.post('/locationGuess/', {"user": user.id, "location": user.current_location,
-    #                                                "lat": 10, "lon": 10}, format='json')
-    #
-    #     self.assertTrue(response.status_code,status.HTTP_201_CREATED)
-    #
-    #     user = User.objects.get(id=user.id)
-    #
-    #     # print "user after location guess"
-    #     # print user
-    #     self.assertNotEqual(last_current_location, int(user.current_location))
+    def _test_get_location_guesses(self,user):
+        request = self.client.get('/user/'+str(user.id)+'/locationGuesses')
 
     # bypass view create location test
     def _test_location_guess_for_user(self):
@@ -174,11 +150,9 @@ def set_up_database():
         print "Creating User with id = "+str(user.id)
         count += 1
 
-
     count = Location.objects.aggregate(count=Count('id'))['count']
 
     while count < 50:
         print "creating Location "+str(count)
-        Location.objects.create(lat=count, lon=count, user=User.objects.order_by('?').first(),
-                                average_guess_distance=count, best_guess_distance=count)
+        Location.objects.create(lat=count, lon=count, user=User.objects.order_by('?').first())
         count += 1

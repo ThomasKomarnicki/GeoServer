@@ -91,8 +91,8 @@ class Location(models.Model):
     user = models.ForeignKey(User, null=True)
     lat = models.DecimalField(max_digits=15, decimal_places=8)
     lon = models.DecimalField(max_digits=15, decimal_places=8)
-    average_guess_distance = models.IntegerField(default=0)
-    best_guess_distance = models.IntegerField(default=0)
+    # average_guess_distance = models.IntegerField(default=0)
+    # best_guess_distance = models.IntegerField(default=0)
 
     def __unicode__(self):
         return "\"location\":{\"id\":"+str(self.id)+"\"lat\":"+str(self.lat)+", \"lon\":"+str(+self.lon)+"}"
@@ -131,7 +131,8 @@ class LocationGuess(models.Model):
     distance = models.IntegerField()
 
     def save(self,**kwargs):
-        self.distance = 1
+        if not self.distance:
+            self.distance = 1
         super(LocationGuess, self).save(**kwargs)
         # TODO calculate distance between location and location guess lat lon
 
