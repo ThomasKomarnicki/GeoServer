@@ -124,14 +124,19 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         return response
 
     @detail_route(methods=['post'], url_path='guess')
-    def guess(self, request, user_id=None):
+    def guess(self, request, pk=None):
         serializer = LocationGuessSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        location = Location.get_new_location(user_id)
+        location = Location.get_new_location(pk)
         location_serializer = LocationSerializer(location)
-        return Response()
+        return Response(data=location_serializer.data, status=200)
 
     @detail_route(methods=['get'], url_path='locationGuesses')
-    def guess(self, request, user_id=None):
+    def guess(self, request,  pk=None):
+        location_guesses = LocationGuess.objects.filter(user__id=pk).all()
+        serializer = self.get_serializer(location_guesses,many=True)
+        # print serializer
+
+        return Response(serializer.data, status=200)

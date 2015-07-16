@@ -30,6 +30,8 @@ class GeoTestCases(TestCase):
 
         self._test_get_location()
 
+        self._test_get_location_guesses(user)
+
     def _test_create_user(self):
         client = APIClient()
 
@@ -101,8 +103,13 @@ class GeoTestCases(TestCase):
 
         self.assertTrue(request.status_code == 200)
 
-    def _test_get_location_guesses(self,user):
-        request = self.client.get('/user/'+str(user.id)+'/locationGuesses')
+    def _test_get_location_guesses(self, user):
+        print "all location guesses:"
+        for location_guess in LocationGuess.objects.all():
+            print location_guess
+        request = self.client.get('/users/'+str(user.id)+'/locationGuesses/')
+        print "location guesses for user:"
+        print request
 
     # bypass view create location test
     def _test_location_guess_for_user(self):
