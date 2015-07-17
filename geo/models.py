@@ -130,6 +130,10 @@ class LocationGuess(models.Model):
     
     distance = models.IntegerField()
 
+    def __unicode__(self):
+        return "user: "+str(self.user.id)+", location = "+str(self.location.id)\
+               + "lat lon =" + str(self.lat) + " " + str(self.lon)
+
     def save(self,**kwargs):
         if not self.distance:
             self.distance = 1

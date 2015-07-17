@@ -136,7 +136,6 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
     @detail_route(methods=['get'], url_path='locationGuesses')
     def guess(self, request,  pk=None):
         location_guesses = LocationGuess.objects.filter(user__id=pk).all()
-        serializer = self.get_serializer(location_guesses,many=True)
-        # print serializer
+        serializer = LocationGuessSerializer(location_guesses, many=True)
 
         return Response(serializer.data, status=200)

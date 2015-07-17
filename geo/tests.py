@@ -24,6 +24,9 @@ class GeoTestCases(TestCase):
         self._test_location_guess({"user": user.id, "location": user.current_location, "lat": 200, "lon": 200})
         self._test_location_guess({})
 
+        print "done testing location guesses:"
+        print LocationGuess.objects.all()
+
         self._test_add_location({"user": user.id, "lat": 10, "lon": 10})
         self._test_add_location({"user": user.id, "lat": 200, "lon": 200})
         self._test_add_location({})
@@ -70,6 +73,9 @@ class GeoTestCases(TestCase):
             user = User.objects.get(id=user.id)
 
             self.assertNotEqual(last_current_location, int(user.current_location))
+
+            self.assertTrue(LocationGuess.objects.filter(user__id=user.id).exists())
+            print LocationGuess.objects.all()
 
         else:
             self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
