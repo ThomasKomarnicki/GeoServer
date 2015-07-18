@@ -7,7 +7,9 @@ from rest_framework.response import Response
 from rest_framework import mixins, status
 from rest_framework.decorators import *
 from rest_framework import serializers
-
+from oauth2client import client, crypt
+import urllib2
+import json
 
 class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
 
@@ -123,6 +125,42 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         response = Response(serializer.data, status=status.HTTP_201_CREATED)
         return response
 
+    @detail_route(methods=['post'], url_path='google_auth')
+    def create_google_user(request,self):
+        data = request.data
+
+        if 'auth_token' not in data:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        url = 'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token='+str(data['auth_token'])
+        serialized_data = urllib2.urlopen(url).read()
+
+        data = json.loads(serialized_data)
+
+        try:
+            idinfo = client.verify_id_token(data)
+            # If multiple clients access the backend server:
+            # if idinfo['aud'] not in [ANDROID_CLIENT_ID, IOS_CLIENT_ID, WEB_CLIENT_ID]:
+            #     raise crypt.AppIdentityError("Unrecognized client.")
+            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                raise crypt.AppIdentityError("Wrong issuer.")
+            # if idinfo['hd'] != APPS_DOMAIN_NAME:
+            #     raise crypt.AppIdentityError("Wrong hosted domain.")
+        except crypt.AppIdentityError:
+            pass
+            # Invalid token
+        userid = idinfo['sub']
+
+        if User.objects.filter(google_auth_id=userid).exists():
+            user = User.objects.filter(google_auth_id=userid).get()
+        else:
+            serializer = self.get_serializer(data={'google_auth_id':userid, 'email':idinfo['email']})
+            user = serializer.save()
+
+        serializer = UserSerializer(user)
+        return Response(serializer.data,status=200)
+
+
     @detail_route(methods=['post'], url_path='guess')
     def guess(self, request, pk=None):
         serializer = LocationGuessSerializer(data=request.data)
@@ -137,5 +175,12 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
     def guess(self, request,  pk=None):
         location_guesses = LocationGuess.objects.filter(user__id=pk).all()
         serializer = LocationGuessSerializer(location_guesses, many=True)
+
+        return Response(serializer.data, status=200)
+
+    @detail_route(methods=['get'], url_path='locations')
+    def guess(self, request,  pk=None):
+        locations = Location.objects.filter(user__id=pk).all()
+        serializer = LocationSerializer(locations, many=True)
 
         return Response(serializer.data, status=200)

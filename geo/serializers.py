@@ -8,6 +8,7 @@ from django.db.models import Avg, Min
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=False)
     other_identifier = serializers.CharField(required=False,max_length=50)
+    google_auth_id = models.CharField(max_length=50, null=True)
     current_location = serializers.IntegerField(required=False)
     guessed_locations = serializers.CharField(required=False)
 

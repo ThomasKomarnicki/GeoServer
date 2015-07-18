@@ -3,7 +3,8 @@ from django.db.models.aggregates import Count
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
-from serializers import LocationSerializer, LocationGuessSerializer
+from serializers import LocationSerializer, LocationGuessSerializer, UserSerializer
+from geo_server import confidential
 
 
 class GeoTestCases(TestCase):
@@ -55,6 +56,16 @@ class GeoTestCases(TestCase):
         self._assert_created_user(user)
 
         # self._test_location_guess_for_user()
+
+    def _test_google_auth(self):
+        auth_token = confidential.google_auth_token
+
+        client = APIClient()
+        request = client.post('user/google_auth/',data={'auth_token':auth_token})
+
+        self.assertEqual(request.status_cod, status.HTTP_200_OK)
+        serializer = UserSerializer(data=request.data)
+        self.assertTrue(serializer.is_valid(raise_exception=False))
 
     def _test_location_guess(self, data):
         client = APIClient()
