@@ -8,9 +8,9 @@ from random import randint
 class User(models.Model):
     email = models.EmailField(null=True)
     other_identifier = models.CharField(max_length=50, null=True)
-    google_auth_id = models.CharField(max_length=50,null=True)
+    google_auth_id = models.CharField(max_length=50,null=True, blank=True)
     current_location = models.IntegerField()
-    guessed_locations = models.CommaSeparatedIntegerField(max_length=64000, null=True)
+    guessed_locations = models.CommaSeparatedIntegerField(max_length=64000, null=True, blank=True)
 
     def __unicode__(self):
 

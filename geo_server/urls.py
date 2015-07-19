@@ -23,8 +23,11 @@ router.register(r'users', UserViewSet)
 router.register(r'locationGuess', LocationGuessViewSet)
 router.register(r'locations', LocationViewSet)
 
+google_auth_view = UserViewSet.as_view({'post':'google_auth'})
+
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^users/google_auth',google_auth_view,name='google_auth')
 ]
 
 urlpatterns += router.urls

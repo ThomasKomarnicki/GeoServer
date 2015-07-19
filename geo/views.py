@@ -125,20 +125,20 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         response = Response(serializer.data, status=status.HTTP_201_CREATED)
         return response
 
-    @detail_route(methods=['post'], url_path='google_auth')
-    def create_google_user(request,self):
+    def google_auth(self, request):
         data = request.data
 
         if 'auth_token' not in data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        url = 'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token='+str(data['auth_token'])
-        serialized_data = urllib2.urlopen(url).read()
-
-        data = json.loads(serialized_data)
+        # url = 'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token='+str(data['auth_token'])
+        # serialized_data = urllib2.urlopen(url).read()
+        #
+        # data = json.loads(serialized_data)
+        # print data
 
         try:
-            idinfo = client.verify_id_token(data)
+            idinfo = client.verify_id_token(data['auth_token'], '92340928633-a2lv6k929j34994pjcfmpdm9a8kc9lme.apps.googleusercontent.com')
             # If multiple clients access the backend server:
             # if idinfo['aud'] not in [ANDROID_CLIENT_ID, IOS_CLIENT_ID, WEB_CLIENT_ID]:
             #     raise crypt.AppIdentityError("Unrecognized client.")
@@ -146,15 +146,16 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
                 raise crypt.AppIdentityError("Wrong issuer.")
             # if idinfo['hd'] != APPS_DOMAIN_NAME:
             #     raise crypt.AppIdentityError("Wrong hosted domain.")
-        except crypt.AppIdentityError:
-            pass
+        except crypt.AppIdentityError as e:
+            print e
             # Invalid token
         userid = idinfo['sub']
 
         if User.objects.filter(google_auth_id=userid).exists():
             user = User.objects.filter(google_auth_id=userid).get()
         else:
-            serializer = self.get_serializer(data={'google_auth_id':userid, 'email':idinfo['email']})
+            serializer = self.get_serializer(data={'google_auth_id': userid, 'email': idinfo['email']})
+            serializer.is_valid()
             user = serializer.save()
 
         serializer = UserSerializer(user)
