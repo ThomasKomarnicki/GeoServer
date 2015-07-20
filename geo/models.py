@@ -92,8 +92,8 @@ class User(models.Model):
 
 class Location(models.Model):
     user = models.ForeignKey(User, null=True)
-    lat = models.DecimalField(max_digits=20, decimal_places=15)
-    lon = models.DecimalField(max_digits=20, decimal_places=15)
+    lat = models.DecimalField(max_digits=20, decimal_places=17)
+    lon = models.DecimalField(max_digits=20, decimal_places=17)
     # average_guess_distance = models.IntegerField(default=0)
     # best_guess_distance = models.IntegerField(default=0)
 
@@ -128,8 +128,8 @@ class LocationGuess(models.Model):
     user = models.ForeignKey(User, null=True)
     location = models.ForeignKey(Location)
     # guess lat and lon
-    lat = models.DecimalField(max_digits=20, decimal_places=15)
-    lon = models.DecimalField(max_digits=20, decimal_places=15)
+    lat = models.DecimalField(max_digits=20, decimal_places=17)
+    lon = models.DecimalField(max_digits=20, decimal_places=17)
     
     distance = models.IntegerField()
 
