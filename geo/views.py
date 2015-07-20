@@ -42,6 +42,23 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    # return all location guesses for location
+    @detail_route(methods=['get'], url_path='details')
+    def get_location_details(self, request, pk):
+
+        if not Location.objects.filter(id=pk).exists():
+            return Response({"error":"location doesn't exist"},status=404);
+
+        location = Location.objects.get(id=pk)
+        serializer = LocationSerializer(location)
+        data = serializer.data
+        location_guesses = LocationGuess.objects.filter(location=location.id).all()
+        guesses_serializer = LocationGuessSerializer(location_guesses, many=True)
+        data['location_guesses'] = guesses_serializer.data
+
+        return Response(data, status=200);
+
+
 
 class LocationGuessViewSet(mixins.CreateModelMixin,
                            mixins.RetrieveModelMixin,
@@ -88,7 +105,7 @@ class LocationGuessViewSet(mixins.CreateModelMixin,
         location_guess = serializer.save()
 
         # print "saving location guess"
-        
+
         user = User.objects.get(id=user_id)
         user.save_location_guess(location_guess)
         location_serializer = LocationSerializer(Location.objects.get(id=user.current_location))
