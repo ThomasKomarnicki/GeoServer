@@ -8,8 +8,7 @@ from rest_framework import mixins, status
 from rest_framework.decorators import *
 from rest_framework import serializers
 from oauth2client import client, crypt
-import urllib2
-import json
+
 
 class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
 
