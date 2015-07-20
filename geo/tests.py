@@ -36,6 +36,8 @@ class GeoTestCases(TestCase):
 
         self._test_get_location_guesses(user)
 
+        self._test_get_location_details(Location.objects.order_by('?').first())
+
     def _test_create_user(self):
         client = APIClient()
 
@@ -119,6 +121,14 @@ class GeoTestCases(TestCase):
         # print request.status_code
 
         self.assertTrue(request.status_code == 200)
+
+    def _test_get_location_details(self, location):
+        
+        request = self.client.get('/locations/'+str(location.id)+'/details/')
+        data = request.data
+        self.assertEqual(location.lat,data['lat'])
+        self.assertEqual(location.lon,data['lon'])
+        self.assertTrue('location_guesses' in data)
 
     def _test_get_location_guesses(self, user):
         print "all location guesses:"
