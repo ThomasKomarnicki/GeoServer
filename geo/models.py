@@ -41,6 +41,8 @@ class User(models.Model):
         count = possible_locations.count()
         if count == 0:
             possible_locations = Location.objects.exclude(user__id=self.id) # user guessed all possible locations
+            count = possible_locations.count()
+
         random_index = randint(0, count - 1)
 
         return possible_locations[random_index]
@@ -90,8 +92,8 @@ class User(models.Model):
 
 class Location(models.Model):
     user = models.ForeignKey(User, null=True)
-    lat = models.DecimalField(max_digits=15, decimal_places=8)
-    lon = models.DecimalField(max_digits=15, decimal_places=8)
+    lat = models.DecimalField(max_digits=20, decimal_places=15)
+    lon = models.DecimalField(max_digits=20, decimal_places=15)
     # average_guess_distance = models.IntegerField(default=0)
     # best_guess_distance = models.IntegerField(default=0)
 
@@ -126,8 +128,8 @@ class LocationGuess(models.Model):
     user = models.ForeignKey(User, null=True)
     location = models.ForeignKey(Location)
     # guess lat and lon
-    lat = models.DecimalField(max_digits=15, decimal_places=8)
-    lon = models.DecimalField(max_digits=15, decimal_places=8)
+    lat = models.DecimalField(max_digits=20, decimal_places=15)
+    lon = models.DecimalField(max_digits=20, decimal_places=15)
     
     distance = models.IntegerField()
 

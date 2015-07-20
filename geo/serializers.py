@@ -45,8 +45,8 @@ class LocationSerializer(serializers.ModelSerializer):
     # best_guess_distance = serializers.IntegerField(required=False)
     average_guess_distance = serializers.ReadOnlyField(source='_get_average')
     best_guess_distance = serializers.ReadOnlyField(source='_get_best')
-    lat = serializers.DecimalField(max_value=90, min_value=-90, max_digits=15, decimal_places=8)
-    lon = serializers.DecimalField(max_value=180, min_value=-180, max_digits=15, decimal_places=8)
+    lat = serializers.DecimalField(max_value=90, min_value=-90, max_digits=20, decimal_places=15)
+    lon = serializers.DecimalField(max_value=180, min_value=-180, max_digits=20, decimal_places=15)
 
     class Meta:
         model = Location
@@ -59,14 +59,22 @@ class LocationSerializer(serializers.ModelSerializer):
         return Location.objects.all().aggregate(Min('distance'))
 
 
+class LocationField(serializers.PrimaryKeyRelatedField):
+
+    def to_representation(self, value):
+        location = self.queryset.get(id=value.pk)
+        return LocationSerializer(location).data
+
+
+
 class LocationGuessSerializer(serializers.ModelSerializer):
 
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     # user = UserSerializer()
-    location = serializers.PrimaryKeyRelatedField(queryset=Location.objects.all())
-    # location = LocationSerializer()
-    lat = serializers.DecimalField(max_value=90, min_value=-90, max_digits=15, decimal_places=8)
-    lon = serializers.DecimalField(max_value=180, min_value=-180, max_digits=15, decimal_places=8)
+    # location = serializers.PrimaryKeyRelatedField(queryset=Location.objects.all())
+    location = LocationField(queryset=Location.objects.all())
+    lat = serializers.DecimalField(max_value=90, min_value=-90, max_digits=20, decimal_places=15)
+    lon = serializers.DecimalField(max_value=180, min_value=-180, max_digits=20, decimal_places=15)
 
     class Meta:
         model = LocationGuess
