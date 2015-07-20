@@ -75,7 +75,7 @@ class LocationGuessViewSet(mixins.CreateModelMixin,
 
         # if not location_id:
         #     return Response(data={"error": "location id not supplied"}, status=400)
-        if not Location.objects.filter(id=user_id).exists():
+        if not Location.objects.filter(id=location_id).exists():
             return Response(data={"error": "not a valid location"}, status=400)
 
         # print 3
