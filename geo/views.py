@@ -8,6 +8,7 @@ from rest_framework import mixins, status
 from rest_framework.decorators import *
 from rest_framework import serializers
 from oauth2client import client, crypt
+from django.db.models import Avg, Min
 
 
 class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -47,17 +48,27 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
     def get_location_details(self, request, pk):
 
         if not Location.objects.filter(id=pk).exists():
-            return Response({"error":"location doesn't exist"},status=404);
+            return Response({"error": "location doesn't exist"},status=404);
 
         location = Location.objects.get(id=pk)
         serializer = LocationSerializer(location)
-        data = serializer.data
+
+        data = {'place': serializer.data}
         location_guesses = LocationGuess.objects.filter(location=location.id).all()
         guesses_serializer = LocationGuessSerializer(location_guesses, many=True)
         data['location_guesses'] = guesses_serializer.data
 
-        return Response(data, status=200);
+        distance_min = location_guesses.aggregate(Min('distance'))['distance__min']
+        if not distance_min:
+            distance_min = 0;
+        data['best_distance'] = distance_min
 
+        avg = location_guesses.aggregate(Avg('distance'))['distance__avg']
+        if not avg:
+            avg = 0
+        data['average_distance'] = avg
+
+        return Response(data, status=200);
 
 
 class LocationGuessViewSet(mixins.CreateModelMixin,

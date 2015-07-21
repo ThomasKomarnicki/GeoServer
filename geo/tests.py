@@ -126,8 +126,8 @@ class GeoTestCases(TestCase):
         
         request = self.client.get('/locations/'+str(location.id)+'/details/')
         data = request.data
-        self.assertEqual(location.lat,data['lat'])
-        self.assertEqual(location.lon,data['lon'])
+        self.assertEqual(str(location.lat), str(data['lat']))
+        self.assertEqual(str(location.lon), str(data['lon']))
         self.assertTrue('location_guesses' in data)
 
     def _test_get_location_guesses(self, user):
