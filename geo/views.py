@@ -200,14 +200,14 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         return Response(data=location_serializer.data, status=200)
 
     @detail_route(methods=['get'], url_path='locationGuesses')
-    def guess(self, request,  pk=None):
+    def locationGuesses(self, request,  pk=None):
         location_guesses = LocationGuess.objects.filter(user__id=pk).all()
         serializer = LocationGuessSerializer(location_guesses, many=True)
 
         return Response(serializer.data, status=200)
 
     @detail_route(methods=['get'], url_path='locations')
-    def guess(self, request,  pk=None):
+    def locations(self, request,  pk=None):
         locations = Location.objects.filter(user__id=pk).all()
         serializer = LocationSerializer(locations, many=True)
 
