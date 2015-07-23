@@ -43,6 +43,7 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
     # return all location guesses for location
     @detail_route(methods=['get'], url_path='details')
     def get_location_details(self, request, pk):
@@ -147,6 +148,9 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
 
         # right now only takes in other_identifier
         if 'other_identifier' in data:
+            if not _is_valid_identifier(data['other_identifier']):
+                return HttpResponse(status=400, content={"error": "invalid identifier"})
+
             if User.objects.filter(other_identifier=data['other_identifier']).exists():
                 print "user with identifier exists, returning that user"
                 serializer = UserSerializer(User.objects.get(other_identifier=data['other_identifier']))
@@ -228,3 +232,11 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         serializer = LocationSerializer(locations, many=True)
 
         return Response(serializer.data, status=200)
+
+def _is_valid_identifier(identifier):
+    try:
+        int(identifier,16)
+    except ValueError:
+        return False
+
+    return True
