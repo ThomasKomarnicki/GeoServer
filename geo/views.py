@@ -134,23 +134,39 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
     serializer_class = UserSerializer
 
     def create(self, request):
-        print "creating user"
-        serializer = self.get_serializer(data=request.data)
-        print "created serializer"
-        try:
-            print "serializer is valid = "+str(serializer.is_valid())
-        except serializers.ValidationError as e:
-            return HttpResponse(status=400, content="{error:}"+e.message)
+        # print "creating user"
+        # serializer = self.get_serializer(data=request.data)
+        # print "created serializer"
+        # try:
+        #     print "serializer is valid = "+str(serializer.is_valid(raise_exception=True))
+        # except serializers.ValidationError as e:
+        #     print str(e)
+        #     return HttpResponse(status=400, content={"error": e.message})
 
-        print "saving user"
-        # response = mixins.CreateModelMixin.create(self, request)
+        data = request.data
 
-        # print serializer
+        # right now only takes in other_identifier
+        if 'other_identifier' in data:
+            if User.objects.filter(other_identifier=data['other_identifier']).exists():
+                print "user with identifier exists, returning that user"
+                serializer = UserSerializer(User.objects.get(other_identifier=data['other_identifier']))
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                user = User(other_identifier=data['other_identifier'])
+                user.save()
+                serializer = UserSerializer(user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+             return HttpResponse(status=400, content={"error": "no identifier"})
 
-        serializer.save()
-
-        response = Response(serializer.data, status=status.HTTP_201_CREATED)
-        return response
+        # print "saving user"
+        # # response = mixins.CreateModelMixin.create(self, request)
+        #
+        # # print serializer
+        #
+        # serializer.save()
+        #
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def google_auth(self, request):
         data = request.data

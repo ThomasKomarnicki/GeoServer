@@ -26,11 +26,11 @@ class UserSerializer(serializers.ModelSerializer):
             except ValidationError:
                 serializers.ValidationError("invalid email")
 
-        if 'email' in data and 'other_identifier' in data:
-            serializers.ValidationError("no identifiers provided")
+        # if 'email' in data and 'other_identifier' in data:
+        #     serializers.ValidationError("no identifiers provided")
 
-        elif 'email' not in data:
-            pass # user other identifier
+        elif 'email' not in data and 'other_identifier' not in data:
+            serializers.ValidationError("must provide email or other identifier")
 
         elif User.objects.filter(email=data['email']).exists():
             serializers.ValidationError("user with email exists")
