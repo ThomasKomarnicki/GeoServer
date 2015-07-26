@@ -93,7 +93,7 @@ ALLOWED_HOSTS = ['*']
 
 STATIC_ROOT = 'static'
 
-
+DATABASES = {'default': dj_database_url.config()}
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
@@ -108,7 +108,6 @@ STATIC_ROOT = 'static'
 #     }
 # }
 
-DATABASES['default'] =  dj_database_url.config()
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
