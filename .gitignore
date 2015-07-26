@@ -61,3 +61,7 @@ target/
 confidential.py
 static/
 
+venv
+*.pyc
+staticfiles
+
