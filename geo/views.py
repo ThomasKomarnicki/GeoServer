@@ -9,6 +9,7 @@ from rest_framework.decorators import *
 from rest_framework import serializers
 from oauth2client import client, crypt
 from django.db.models import Avg, Min
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -219,16 +220,33 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         location_serializer = LocationSerializer(location)
         return Response(data=location_serializer.data, status=200)
 
-    @detail_route(methods=['get'], url_path='locationGuesses')
+    @list_route(methods=['get'], url_path='locationGuesses')
     def locationGuesses(self, request,  pk=None):
+        page = request.query_params.get('page',None)
         location_guesses = LocationGuess.objects.filter(user__id=pk).all()
+        try:
+            paginator = Paginator(location_guesses,20)
+            location_guesses = paginator.page(page)
+        except PageNotAnInteger:
+            return Response({'error':'page is not an integer'},status=400)
+        except EmptyPage:
+            return Response([],status=200)
         serializer = LocationGuessSerializer(location_guesses, many=True)
 
         return Response(serializer.data, status=200)
 
-    @detail_route(methods=['get'], url_path='locations')
+    @list_route(methods=['get'], url_path='locations')
     def locations(self, request,  pk=None):
         locations = Location.objects.filter(user__id=pk).all()
+        page = request.query_params.get('page',None)
+        try:
+            paginator = Paginator(locations,20)
+            locations = paginator.page(page)
+        except PageNotAnInteger:
+            return Response({'error':'page is not an integer'},status=400)
+        except EmptyPage:
+            return Response([],status=200)
+
         serializer = LocationSerializer(locations, many=True)
 
         return Response(serializer.data, status=200)
