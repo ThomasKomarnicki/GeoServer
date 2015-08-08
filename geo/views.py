@@ -223,7 +223,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
     @detail_route(methods=['get'], url_path='locationGuesses')
     def locationGuesses(self, request,  pk=None):
         page = request.query_params.get('page',None)
-        location_guesses = LocationGuess.objects.filter(user__id=pk).all()
+        location_guesses = LocationGuess.objects.filter(user__id=pk).reverse().all()
         try:
             paginator = Paginator(location_guesses,20)
             location_guesses = paginator.page(page)
@@ -237,7 +237,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
 
     @detail_route(methods=['get'], url_path='locations')
     def locations(self, request,  pk=None):
-        locations = Location.objects.filter(user__id=pk).all()
+        locations = Location.objects.filter(user__id=pk).reverse().all()
         page = request.query_params.get('page',None)
         try:
             paginator = Paginator(locations,20)
