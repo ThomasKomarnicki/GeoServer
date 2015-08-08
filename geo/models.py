@@ -11,7 +11,7 @@ class User(models.Model):
     google_auth_id = models.CharField(max_length=50,null=True, blank=True)
     current_location = models.IntegerField()
     guessed_locations = models.CommaSeparatedIntegerField(max_length=64000, null=True, blank=True)
-    auth_token = models.CharField(max_length=256)
+    # auth_token = models.CharField(max_length=256)
 
     def __unicode__(self):
 
@@ -80,8 +80,8 @@ class User(models.Model):
         elif not self.current_location:
             self.current_location = self.get_next_location().id
 
-        hash_object = str(self.email) + str(self.other_identifier)
-        self.auth_token = hashlib.sha256(hash_object)
+        # hash_object = str(self.email) + str(self.other_identifier)
+        # self.auth_token = hashlib.sha256(hash_object)
 
 
         # if self.guessed_locations:
