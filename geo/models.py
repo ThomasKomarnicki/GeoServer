@@ -15,7 +15,7 @@ class User(models.Model):
 
     def __unicode__(self):
 
-        return 'email: '+str(self.email)
+        return 'id: '+str(self.id)+', email: '+str(self.email)
 
     def get_next_location(self):
         # TODO
