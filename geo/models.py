@@ -81,7 +81,7 @@ class User(models.Model):
             self.current_location = self.get_next_location().id
 
         hash_object = str(self.email) + str(self.other_identifier)
-        self.auth_token = hashlib.sha256(hash_object)
+        self.auth_token = hashlib.sha256(hash_object).hexdigest()
 
 
         # if self.guessed_locations:
