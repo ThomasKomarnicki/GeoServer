@@ -133,7 +133,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
             if User.objects.filter(other_identifier=data['other_identifier']).exists():
                 print "user with identifier exists, returning that user"
                 user = User.objects.get(other_identifier=data['other_identifier']);
-                user = user.save()
+                user.save()
                 serializer = UserSerializer(user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
@@ -166,7 +166,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
 
         if User.objects.filter(google_auth_id=userid).exists():
             user = User.objects.filter(google_auth_id=userid).get()
-            user = user.save()
+            user.save()
         else:
             serializer = self.get_serializer(data={'google_auth_id': userid, 'email': idinfo['email']})
             serializer.is_valid()
