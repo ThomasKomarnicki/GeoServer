@@ -123,7 +123,7 @@ class GeoTestCases(TestCase):
         self.assertTrue(request.status_code == 200)
 
     def _test_get_location_details(self, location):
-        
+
         request = self.client.get('/locations/'+str(location.id)+'/details/')
         data = request.data
         self.assertEqual(str(location.lat), str(data['lat']))
@@ -181,7 +181,20 @@ class GeoTestCases(TestCase):
         user = User.objects.all().first()
         original_location = Location.objects.create(lat=10.000, lon=10.000)
 
-        request = self.client.post('/locations/', {'user':user.id, 'lat':10.001, 'lon':10.001},format='json')
+        users = User.objects.all()
+        request = self.client.post('/locations/', {'user':users[0], 'lat':10.001, 'lon':10.001},format='json')
+        request = self.client.post('/locations/', {'user':users[1], 'lat':9.9999, 'lon':9.9999},format='json')
+        request = self.client.post('/locations/', {'user':users[2], 'lat':10.0001, 'lon':10.0001},format='json')
+
+        ids_of_users = []
+        self.assertTrue(Location.objects.get(id=original_location.id).users.count()>1)
+        for user in Location.objects.get(id=original_location.id).users:
+            ids_of_users.append(user.id)
+
+        self.assertTrue(0 in ids_of_users)
+        self.assertTrue(1 in ids_of_users)
+        self.assertTrue(2 in ids_of_users)
+        
 
 
 def set_up_database():
