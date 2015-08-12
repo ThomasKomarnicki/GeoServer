@@ -18,16 +18,21 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
 
     def create(self, request):
 
+        if 'user' in request.data:
+            user_id = request.data['user']
+            del request.data['user']
+        else:
+            return Response(data={"error": "invalid data"}, status=400)
         serializer = self.get_serializer(data=request.data)
 
         # if not all required fields are in the data return an error
         if not all(name in serializer.initial_data for name in ['user', 'lat', 'lon']):
             return Response(data={"error": "invalid data"}, status=400)
 
-        user_id = serializer.initial_data['user']
+        # user_id = serializer.initial_data['user']
 
         auth_token = request.query_params.get('auth_token', None)
-        if not _is_valid_auth_token(auth_token,user_id):
+        if not _is_valid_auth_token(auth_token, user_id):
             return Response(status=403)
 
         if not User.objects.filter(id=user_id).exists():
@@ -36,10 +41,35 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
         if not serializer.is_valid():
             return Response(data={"error": "invalid data"}, status=400)
 
-        serializer.save()
+        lat = float(request.data['lat'])
+        lon = float(request.data['lon'])
+        close_locations = Location.objects.filter(lat__range=(lat-.001,lat+.001)).filter(lon__range=(lon-.001,lon+0.001)).all()
+        close_location = self._find_closest_location(close_locations,lat,lon)
+        if close_location:
+            close_location.users.add(User.objects.get(id=user_id))
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        # only add location if not too close to any other locations
+        location = serializer.save()
+        location.users.add(User.objects.get(id=user_id))
+        location.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    def _find_closest_location(self,close_locations, lat, lon):
+        closest = None
+        closest_diff = 1
+
+        if close_locations.count() == 0:
+            return None
+
+        for location in close_locations:
+            diff = (lat - location.lat) + (lon - location.lon)
+            if diff < closest_diff:
+                closest = location
+                closest_diff = diff
+
+        return closest
 
     # return all location guesses for location
     @detail_route(methods=['get'], url_path='details')

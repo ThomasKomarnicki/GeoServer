@@ -102,14 +102,14 @@ class GeoTestCases(TestCase):
 
         if valid:
             user = User.objects.get(id=data['user'])
-            user_locations_count = Location.objects.filter(user__id=user.id).count()
+            user_locations_count = Location.objects.filter(users__id=user.id).count()
 
 
         response = client.post('/locations/', data, format='json')
 
         if valid:
             self.assertTrue(response.status_code, status.HTTP_201_CREATED)
-            self.assertTrue(Location.objects.filter(user__id=user.id).count() == (user_locations_count + 1))
+            self.assertTrue(Location.objects.filter(users__id=user.id).count() == (user_locations_count + 1))
 
         else:
             self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -175,6 +175,13 @@ class GeoTestCases(TestCase):
     def _assert_created_user(self, user):
         self.assertTrue(Location.objects.filter(id=user.current_location).exists())
         self.assertTrue(user.email or user.other_identifier)
+
+
+    def test_locations_to_near_locations(self):
+        user = User.objects.all().first()
+        original_location = Location.objects.create(lat=10.000, lon=10.000)
+
+        request = self.client.post('/locations/', {'user':user.id, 'lat':10.001, 'lon':10.001},format='json')
 
 
 def set_up_database():
