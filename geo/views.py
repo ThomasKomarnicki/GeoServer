@@ -9,6 +9,8 @@ from rest_framework.decorators import *
 from oauth2client import client, crypt
 from django.db.models import Avg, Min
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils import timezone
+
 
 
 class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -41,35 +43,7 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
         if not serializer.is_valid():
             return Response(data={"error": "invalid data"}, status=400)
 
-        lat = float(request.data['lat'])
-        lon = float(request.data['lon'])
-        close_locations = Location.objects.filter(lat__range=(lat-.001,lat+.001)).filter(lon__range=(lon-.001,lon+0.001)).all()
-        close_location = self._find_closest_location(close_locations,lat,lon)
-        if close_location:
-            close_location.users.add(User.objects.get(id=user_id))
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        # only add location if not too close to any other locations
-        location = serializer.save()
-        location.users.add(User.objects.get(id=user_id))
-        location.save()
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def _find_closest_location(self,close_locations, lat, lon):
-        closest = None
-        closest_diff = 1
-
-        if close_locations.count() == 0:
-            return None
-
-        for location in close_locations:
-            diff = (lat - location.lat) + (lon - location.lon)
-            if diff < closest_diff:
-                closest = location
-                closest_diff = diff
-
-        return closest
+        return _save_location(request.data,user_id)
 
     # return all location guesses for location
     @detail_route(methods=['get'], url_path='details')
@@ -261,9 +235,53 @@ def _is_valid_identifier(identifier):
 
     return True
 
+
 def _is_valid_auth_token(auth_token,user_id):
     try:
         user = User.objects.get(id=user_id)
         return user.auth_token == auth_token
     except:
         return False
+
+
+def _save_location(request_data, user_id):
+    request_data['date_added'] = timezone.now()
+    serializer = LocationSerializer(data=request_data)
+    if not serializer.is_valid():
+        print "location not valid"
+        return Response({'error':'location not valid'},status=400)
+
+    lat = float(request_data['lat'])
+    lon = float(request_data['lon'])
+    close_locations = Location.objects.filter(lat__range=(lat-.001,lat+.001)).filter(lon__range=(lon-.001,lon+0.001)).all()
+    close_location = _find_closest_location(close_locations,lat,lon)
+    if close_location:
+        print "close location found"
+        close_location.users.add(User.objects.get(id=user_id))
+        print "adding user " + str(user_id) + " to location " +str(close_location.id)
+        close_location.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    # only add location if not too close to any other locations
+    print "not close location"
+    location = serializer.save()
+    location.users.add(User.objects.get(id=user_id))
+    location.save()
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+def _find_closest_location(close_locations, lat, lon):
+    closest = None
+    closest_diff = 1
+
+    if close_locations.count() == 0:
+        return None
+
+    for location in close_locations:
+        diff = (lat - float(location.lat)) + (lon - float(location.lon))
+        if diff < closest_diff:
+            closest = location
+            closest_diff = diff
+
+    return closest

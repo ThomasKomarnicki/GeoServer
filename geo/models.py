@@ -94,7 +94,7 @@ class Location(models.Model):
     users = models.ManyToManyField(User)
     lat = models.DecimalField(max_digits=20, decimal_places=17)
     lon = models.DecimalField(max_digits=20, decimal_places=17)
-    date_added = models.DateField(auto_now=True)
+    date_added = models.DateTimeField(auto_now=True)
     # average_guess_distance = models.IntegerField(default=0)
     # best_guess_distance = models.IntegerField(default=0)
 

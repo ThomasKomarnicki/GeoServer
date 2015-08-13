@@ -47,11 +47,11 @@ class LocationSerializer(serializers.ModelSerializer):
     best_guess_distance = serializers.ReadOnlyField(source='_get_best')
     lat = serializers.DecimalField(max_value=90, min_value=-90, max_digits=20, decimal_places=17)
     lon = serializers.DecimalField(max_value=180, min_value=-180, max_digits=20, decimal_places=17)
-    date_added = serializers.DateField()
+    date_added = serializers.DateTimeField()
 
     class Meta:
         model = Location
-        # fields = ('lat', 'lon', 'user', 'average_guess_distance', 'best_guess_distance')
+        fields = ('lat', 'lon', 'average_guess_distance', 'best_guess_distance', 'date_added')
 
     def _get_average(self):
         return LocationGuess.objects.aggregate(Avg('distance'))
