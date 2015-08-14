@@ -10,6 +10,9 @@ from oauth2client import client, crypt
 from django.db.models import Avg, Min
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
+from geopy.distance import vincenty
+
+LAT_LNG_DIF = 0.01
 
 
 
@@ -253,8 +256,21 @@ def _save_location(request_data, user_id):
 
     lat = float(request_data['lat'])
     lon = float(request_data['lon'])
-    close_locations = Location.objects.filter(lat__range=(lat-.001,lat+.001)).filter(lon__range=(lon-.001,lon+0.001)).all()
-    close_location = _find_closest_location(close_locations,lat,lon)
+    # filter by range of +- LAT_LNG_DIF
+    close_locations = Location.objects.filter(lat__range=(lat-LAT_LNG_DIF,lat+LAT_LNG_DIF))\
+        .filter(lon__range=(lon-LAT_LNG_DIF, lon+LAT_LNG_DIF)).all()
+
+    # keep locations that are less than 100 meters away
+    close_locations_list = []
+    for location in close_locations:
+        distance = vincenty((float(location.lat),float(location.lon)),(lat,lon)).meters
+        print "location "+str(location) + " is " + str(distance) + " meters from the new location " + str(lat) + ", " + str(lon)
+        if distance < 100:
+            close_locations_list.append(location)
+
+    # close_locations_list = [location for location in close_locations if not vincenty((float(location.lat),float(location.lon)),(lat,lon)).meters < 100]
+
+    close_location = _find_closest_location(close_locations_list,lat,lon)
     if close_location:
         print "close location found"
         close_location.users.add(User.objects.get(id=user_id))
@@ -275,7 +291,7 @@ def _find_closest_location(close_locations, lat, lon):
     closest = None
     closest_diff = 1
 
-    if close_locations.count() == 0:
+    if len(close_locations) == 0:
         return None
 
     for location in close_locations:

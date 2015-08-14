@@ -183,29 +183,48 @@ class GeoTestCases(TestCase):
     def test_locations_to_near_locations(self):
         import views
         user = User.objects.all().first()
-        original_location = Location.objects.create(lat=70.000, lon=70.000)
-        original_location.users.add(user)
+        # original_location = Location.objects.create(lat=27.900911, lon=-82.660154)
+        data = {'lat':27.900911, 'lon':-82.660154}
+        views._save_location(data, user.id)
+        original_location = Location.objects.all().reverse().first()
+        # original_location.users.add(user)
+        # original_location.save()
 
         users = User.objects.all()
         # data = {'lat':70.00, 'lon':70.00}
         # views._save_location(data, users[3].id)
 
-        data = {'lat':70.0001, 'lon':70.0001}
+        data = {'lat':27.901040, 'lon':-82.660318}
         views._save_location(data, users[1].id)
-        data = {'lat':69.9999, 'lon':69.9999}
+        data = {'lat':27.900767, 'lon':-82.659999}
         views._save_location(data, users[2].id)
-        data = {'lat':70.00001, 'lon':70.00001}
+        data = {'lat':27.901145, 'lon':-82.660417}
         views._save_location(data, users[3].id)
+
+        data = {'lat': 27.905030, 'lon': -82.664390} # a little more than 100 meters
+        views._save_location(data, users[4].id)
 
         ids_of_users = []
         print "original location id = "+ str(original_location.id)
-        self.assertTrue(Location.objects.get(id=original_location.id).users.count() > 1)
+        self.assertTrue(Location.objects.get(id=original_location.id).users.count() == 4)
+        print "number of users for original location = "+ str(Location.objects.get(id=original_location.id).users.count())
         for user in Location.objects.get(id=original_location.id).users.all():
             ids_of_users.append(user.id)
 
         self.assertTrue(users[1].id in ids_of_users)
         self.assertTrue(users[2].id in ids_of_users)
         self.assertTrue(users[3].id in ids_of_users)
+
+        self.assertTrue(users[4].id not in ids_of_users)
+
+        # test duplicate users aren't added
+        data = {'lat':27.901040, 'lon':-82.660318}
+        views._save_location(data, users[1].id)
+        data = {'lat':27.900767, 'lon':-82.659999}
+        views._save_location(data, users[2].id)
+
+        self.assertTrue(Location.objects.get(id=original_location.id).users.count() == 4)
+
         
 
 
