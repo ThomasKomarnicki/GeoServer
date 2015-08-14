@@ -203,7 +203,7 @@ class GeoTestCases(TestCase):
         data = {'lat':27.901145, 'lon':-82.660417}
         views._save_location(data, users[3].id)
 
-        data = {'lat': 27.905030, 'lon': -82.664390} # a little more than 100 meters
+        data = {'lat': 27.903030, 'lon': -82.662390} # a little more than 100 meters
         views._save_location(data, users[4].id)
 
         ids_of_users = []
@@ -227,7 +227,12 @@ class GeoTestCases(TestCase):
 
         self.assertTrue(Location.objects.get(id=original_location.id).users.count() == 4)
 
-        
+        # similar location was submitted, should be withtin ~ 100 - 500 meters
+        # so it should be too close to user[4]'s other location
+        data = {'lat': 27.903030, 'lon': -82.662390} # a little more than 100 meters
+        response = views._save_location(data, users[4].id)
+        self.assertTrue(response.status_code == 400)
+
 
 
 def set_up_database():
