@@ -12,8 +12,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 from geopy.distance import vincenty
 
-LAT_LNG_DIF = 0.01 # ~1110 meters at the equator
-
+LAT_LNG_DIF = 0.01  # ~1110 meters at the equator
 
 
 class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -31,7 +30,7 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
         serializer = self.get_serializer(data=request.data)
 
         # if not all required fields are in the data return an error
-        if not all(name in serializer.initial_data for name in ['user', 'lat', 'lon']):
+        if not all(name in serializer.initial_data for name in ['lat', 'lon']):
             return Response(data={"error": "invalid data"}, status=400)
 
         # user_id = serializer.initial_data['user']
