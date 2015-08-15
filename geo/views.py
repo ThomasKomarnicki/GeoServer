@@ -26,12 +26,12 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
             user_id = request.data['user']
             del request.data['user']
         else:
-            return Response(data={"error": "invalid data"}, status=400)
+            return Response(data={"error": "user not in data field"}, status=400)
         serializer = self.get_serializer(data=request.data)
 
         # if not all required fields are in the data return an error
         if not all(name in serializer.initial_data for name in ['lat', 'lon']):
-            return Response(data={"error": "invalid data"}, status=400)
+            return Response(data={"error": "lat lon not in data"}, status=400)
 
         # user_id = serializer.initial_data['user']
 
@@ -43,9 +43,9 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
             return Response(data={"error": "not a valid user"}, status=400)
 
         if not serializer.is_valid():
-            return Response(data={"error": "invalid data"}, status=400)
+            return Response(data={"error": "serializer didn't validate"}, status=400)
 
-        return _save_location(request.data,user_id)
+        return _save_location(request.data, user_id)
 
     # return all location guesses for location
     @detail_route(methods=['get'], url_path='details')
