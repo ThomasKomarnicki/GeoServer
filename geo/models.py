@@ -4,7 +4,6 @@ import hashlib
 
 # Create your models here.
 
-
 class User(models.Model):
     email = models.EmailField(null=True)
     other_identifier = models.CharField(max_length=50, null=True)
@@ -41,7 +40,7 @@ class User(models.Model):
 
         count = possible_locations.count()
         if count == 0:
-            possible_locations = Location.objects.exclude(user__id=self.id) # user guessed all possible locations
+            possible_locations = Location.objects.exclude(users__id=self.id) # user guessed all possible locations
             count = possible_locations.count()
 
         random_index = randint(0, count - 1)
@@ -57,7 +56,6 @@ class User(models.Model):
         # if str(random_index) in already_guessed_locations: # TODO needs testing
         #     return self._get_random_location(already_guessed_locations)
         # return Location.objects.all()[random_index]
-
 
 
     def save_location_guess(self, location_guess):
@@ -83,21 +81,20 @@ class User(models.Model):
         hash_object = str(self.email) + str(self.other_identifier)
         self.auth_token = hashlib.sha256(hash_object).hexdigest()
 
-
         # if self.guessed_locations:
         #     self.guessed_locations += str(self.current_location) + ','
         # else:
         #     self.guessed_locations = str(self.current_location) + ','
 
         super(User, self).save(**kwargs)
-
-
     
 
 class Location(models.Model):
-    user = models.ForeignKey(User, null=True)
+    # user = models.ForeignKey(User, null=True)
+    users = models.ManyToManyField(User)
     lat = models.DecimalField(max_digits=20, decimal_places=17)
     lon = models.DecimalField(max_digits=20, decimal_places=17)
+    date_added = models.DateTimeField(auto_now=True)
     # average_guess_distance = models.IntegerField(default=0)
     # best_guess_distance = models.IntegerField(default=0)
 
@@ -150,4 +147,3 @@ class LocationGuess(models.Model):
 
     # def __unicode__(self):
     #     return self.location+", \"location_guess\":{\"lat\":"+self.lat+", \"lon\":"+self.lon+"}"
-
