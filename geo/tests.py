@@ -16,27 +16,31 @@ class GeoTestCases(TestCase):
         set_up_database()
 
     def test_geo(self):
-        self._test_create_user()
+        # need to be redone for auth tokens
+        # self._test_create_user()
         # self._test_location_guess()
         user = User.objects.order_by('?').first()
-        self._test_location_guess({"user": user.id, "location": user.current_location, "lat": 10, "lon": 10})
-        self._test_location_guess({"user": 569549945, "location": user.current_location, "lat": 10, "lon": 10})
-        self._test_location_guess({"user": user.id, "location": 958597597, "lat": 10, "lon": 10})
-        self._test_location_guess({"user": user.id, "location": user.current_location, "lat": 200, "lon": 200})
-        self._test_location_guess({})
+        # self._test_location_guess({"user": user.id, "location": user.current_location, "lat": 10, "lon": 10})
+        # self._test_location_guess({"user": 569549945, "location": user.current_location, "lat": 10, "lon": 10})
+        # self._test_location_guess({"user": user.id, "location": 958597597, "lat": 10, "lon": 10})
+        # self._test_location_guess({"user": user.id, "location": user.current_location, "lat": 200, "lon": 200})
+        # self._test_location_guess({})
 
         print "done testing location guesses:"
         print LocationGuess.objects.all()
 
-        self._test_add_location({"user": user.id, "lat": 10, "lon": 10})
-        self._test_add_location({"user": user.id, "lat": 200, "lon": 200})
-        self._test_add_location({})
+        # need to be refactored for auth tokens
+        # self._test_add_location({"user": user.id, "lat": 10, "lon": 10})
+        # self._test_add_location({"user": user.id, "lat": 200, "lon": 200})
+        # self._test_add_location({})
 
         self._test_get_location()
 
         self._test_get_location_guesses(user)
 
         self._test_get_location_details(Location.objects.order_by('?').first())
+
+        self.test_locations_to_near_locations()
 
     def _test_create_user(self):
         client = APIClient()
@@ -102,14 +106,14 @@ class GeoTestCases(TestCase):
 
         if valid:
             user = User.objects.get(id=data['user'])
-            user_locations_count = Location.objects.filter(user__id=user.id).count()
+            user_locations_count = Location.objects.filter(users__id=user.id).count()
 
 
         response = client.post('/locations/', data, format='json')
 
         if valid:
             self.assertTrue(response.status_code, status.HTTP_201_CREATED)
-            self.assertTrue(Location.objects.filter(user__id=user.id).count() == (user_locations_count + 1))
+            self.assertTrue(Location.objects.filter(users__id=user.id).count() == (user_locations_count + 1))
 
         else:
             self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -123,11 +127,12 @@ class GeoTestCases(TestCase):
         self.assertTrue(request.status_code == 200)
 
     def _test_get_location_details(self, location):
-        
+
         request = self.client.get('/locations/'+str(location.id)+'/details/')
         data = request.data
-        self.assertEqual(str(location.lat), str(data['lat']))
-        self.assertEqual(str(location.lon), str(data['lon']))
+        # print data
+        self.assertEqual(str(location.lat), str(data['place']['lat']))
+        self.assertEqual(str(location.lon), str(data['place']['lon']))
         self.assertTrue('location_guesses' in data)
 
     def _test_get_location_guesses(self, user):
@@ -177,16 +182,70 @@ class GeoTestCases(TestCase):
         self.assertTrue(user.email or user.other_identifier)
 
 
+    def test_locations_to_near_locations(self):
+        import views
+        user = User.objects.all().first()
+        # original_location = Location.objects.create(lat=27.900911, lon=-82.660154)
+        data = {'lat':27.900911, 'lon':-82.660154}
+        views._save_location(data, user.id)
+        original_location = Location.objects.all().reverse().first()
+        # original_location.users.add(user)
+        # original_location.save()
+
+        users = User.objects.all()
+        # data = {'lat':70.00, 'lon':70.00}
+        # views._save_location(data, users[3].id)
+
+        data = {'lat':27.901040, 'lon':-82.660318}
+        views._save_location(data, users[1].id)
+        data = {'lat':27.900767, 'lon':-82.659999}
+        views._save_location(data, users[2].id)
+        data = {'lat':27.901145, 'lon':-82.660417}
+        views._save_location(data, users[3].id)
+
+        data = {'lat': 27.903030, 'lon': -82.662390} # a little more than 100 meters
+        views._save_location(data, users[4].id)
+
+        ids_of_users = []
+        print "original location id = "+ str(original_location.id)
+        self.assertTrue(Location.objects.get(id=original_location.id).users.count() == 4)
+        print "number of users for original location = "+ str(Location.objects.get(id=original_location.id).users.count())
+        for user in Location.objects.get(id=original_location.id).users.all():
+            ids_of_users.append(user.id)
+
+        self.assertTrue(users[1].id in ids_of_users)
+        self.assertTrue(users[2].id in ids_of_users)
+        self.assertTrue(users[3].id in ids_of_users)
+
+        self.assertTrue(users[4].id not in ids_of_users)
+
+        # test duplicate users aren't added
+        data = {'lat':27.901040, 'lon':-82.660318}
+        views._save_location(data, users[1].id)
+        data = {'lat':27.900767, 'lon':-82.659999}
+        views._save_location(data, users[2].id)
+
+        self.assertTrue(Location.objects.get(id=original_location.id).users.count() == 4)
+
+        # similar location was submitted, should be withtin ~ 100 - 500 meters
+        # so it should be too close to user[4]'s other location
+        data = {'lat': 27.903030, 'lon': -82.662390} # a little more than 100 meters
+        response = views._save_location(data, users[4].id)
+        self.assertTrue(response.status_code == 400)
+
+
+
 def set_up_database():
     count = User.objects.aggregate(count=Count('id'))['count']
     while count < 5:
         user = User.objects.create(email='test'+str(count)+'@gmail.com')
-        print "Creating User with id = "+str(user.id)
+        # print "Creating User with id = "+str(user.id)
         count += 1
 
     count = Location.objects.aggregate(count=Count('id'))['count']
 
     while count < 50:
-        print "creating Location "+str(count)
-        Location.objects.create(lat=count, lon=count, user=User.objects.order_by('?').first())
+        # print "creating Location "+str(count)
+        location = Location.objects.create(lat=count, lon=count)
+        location.users.add(User.objects.order_by('?').first())
         count += 1

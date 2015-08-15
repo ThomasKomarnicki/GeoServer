@@ -9,6 +9,11 @@ from rest_framework.decorators import *
 from oauth2client import client, crypt
 from django.db.models import Avg, Min
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils import timezone
+from geopy.distance import vincenty
+
+LAT_LNG_DIF = 0.01 # ~1110 meters at the equator
+
 
 
 class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -18,16 +23,21 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
 
     def create(self, request):
 
+        if 'user' in request.data:
+            user_id = request.data['user']
+            del request.data['user']
+        else:
+            return Response(data={"error": "invalid data"}, status=400)
         serializer = self.get_serializer(data=request.data)
 
         # if not all required fields are in the data return an error
         if not all(name in serializer.initial_data for name in ['user', 'lat', 'lon']):
             return Response(data={"error": "invalid data"}, status=400)
 
-        user_id = serializer.initial_data['user']
+        # user_id = serializer.initial_data['user']
 
         auth_token = request.query_params.get('auth_token', None)
-        if not _is_valid_auth_token(auth_token,user_id):
+        if not _is_valid_auth_token(auth_token, user_id):
             return Response(status=403)
 
         if not User.objects.filter(id=user_id).exists():
@@ -36,10 +46,7 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
         if not serializer.is_valid():
             return Response(data={"error": "invalid data"}, status=400)
 
-        serializer.save()
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+        return _save_location(request.data,user_id)
 
     # return all location guesses for location
     @detail_route(methods=['get'], url_path='details')
@@ -68,6 +75,64 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
 
         return Response(data, status=200);
 
+
+def _save_location(request_data, user_id):
+    request_data['date_added'] = timezone.now()
+    serializer = LocationSerializer(data=request_data)
+    if not serializer.is_valid():
+        print "location not valid"
+        return Response({'error':'location not valid'},status=400)
+
+    lat = float(request_data['lat'])
+    lon = float(request_data['lon'])
+    # filter by range of +- LAT_LNG_DIF
+    close_locations = Location.objects.filter(lat__range=(lat-LAT_LNG_DIF,lat+LAT_LNG_DIF))\
+        .filter(lon__range=(lon-LAT_LNG_DIF, lon+LAT_LNG_DIF)).all()
+
+    # keep locations that are less than 100 meters away
+    close_locations_list = []
+    for location in close_locations:
+        distance = vincenty((float(location.lat),float(location.lon)),(lat,lon)).meters
+        print "location "+str(location) + " is " + str(distance) + " meters from the new location " + str(lat) + ", " + str(lon)
+        if distance < 100:
+            close_locations_list.append(location)
+        else if distance < 500 and location.id == user_id:
+            #don't add similar location for user
+            return Response({'error':'location is too close to another location'},status=400)
+
+    # close_locations_list = [location for location in close_locations if not vincenty((float(location.lat),float(location.lon)),(lat,lon)).meters < 100]
+
+    close_location = _find_closest_location(close_locations_list,lat,lon)
+    if close_location:
+        print "close location found"
+        close_location.users.add(User.objects.get(id=user_id))
+        print "adding user " + str(user_id) + " to location " +str(close_location.id)
+        close_location.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    # only add location if not too close to any other locations
+    print "not close location"
+    location = serializer.save()
+    location.users.add(User.objects.get(id=user_id))
+    location.save()
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+def _find_closest_location(close_locations, lat, lon):
+    closest = None
+    closest_diff = 1
+
+    if len(close_locations) == 0:
+        return None
+
+    for location in close_locations:
+        diff = (lat - float(location.lat)) + (lon - float(location.lon))
+        if diff < closest_diff:
+            closest = location
+            closest_diff = diff
+
+    return closest
 
 class LocationGuessViewSet(mixins.CreateModelMixin,
                            mixins.RetrieveModelMixin,
@@ -230,6 +295,7 @@ def _is_valid_identifier(identifier):
         return False
 
     return True
+
 
 def _is_valid_auth_token(auth_token,user_id):
     try:
