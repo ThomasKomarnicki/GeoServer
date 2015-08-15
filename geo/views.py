@@ -273,7 +273,11 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
 
     @detail_route(methods=['get'], url_path='locations')
     def locations(self, request,  pk=None):
-        locations = Location.objects.filter(users__id=pk).reverse().all()
+        try:
+            user = User.objects.get(id=pk)
+        except:
+            return Response({'error':'no user with id '+str(pk)},status=400)
+        locations = Location.objects.filter(users=user).reverse().all()
         page = request.query_params.get('page',None)
         try:
             paginator = Paginator(locations,20)
