@@ -42,10 +42,11 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
         if not User.objects.filter(id=user_id).exists():
             return Response(data={"error": "not a valid user"}, status=400)
 
-        if not serializer.is_valid():
-            return Response(data={"error": "invalid data"}, status=400)
+        # serializer.date_added = timezone.now()
+        # if not serializer.is_valid():
+        #     return Response(data={"error": "invalid data"}, status=400)
 
-        return _save_location(request.data,user_id)
+        return _save_location(request.data, user_id)
 
     # return all location guesses for location
     @detail_route(methods=['get'], url_path='details')
