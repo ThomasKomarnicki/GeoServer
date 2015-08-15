@@ -96,7 +96,7 @@ def _save_location(request_data, user_id):
         print "location "+str(location) + " is " + str(distance) + " meters from the new location " + str(lat) + ", " + str(lon)
         if distance < 100:
             close_locations_list.append(location)
-        else if distance < 500 and location.id == user_id:
+        elif distance < 500 and location.id == user_id:
             #don't add similar location for user
             return Response({'error':'location is too close to another location'},status=400)
 
