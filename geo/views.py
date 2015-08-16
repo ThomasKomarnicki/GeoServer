@@ -135,6 +135,7 @@ def _find_closest_location(close_locations, lat, lon):
 
     return closest
 
+
 class LocationGuessViewSet(mixins.CreateModelMixin,
                            mixins.RetrieveModelMixin,
                            mixins.ListModelMixin,
