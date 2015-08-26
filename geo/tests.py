@@ -29,9 +29,9 @@ class GeoTestCases(TestCase):
         print LocationGuess.objects.all()
 
         # need to be refactored for auth tokens
-        # self._test_add_location({"user": user.id, "lat": 10, "lon": 10})
-        # self._test_add_location({"user": user.id, "lat": 200, "lon": 200})
-        # self._test_add_location({})
+        self._test_add_location({"user": user.id, "lat": 10, "lon": 10}, user.auth_token)
+        self._test_add_location({"user": user.id, "lat": 200, "lon": 200}, user.auth_token)
+        self._test_add_location({}, user.auth_token)
 
         self._test_get_location()
 
@@ -91,7 +91,7 @@ class GeoTestCases(TestCase):
             self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertIn('error',response.data)
 
-    def _test_add_location(self, data):
+    def _test_add_location(self, data, auth_token):
         client = APIClient()
 
         serializer = LocationSerializer(data=data)
@@ -101,8 +101,7 @@ class GeoTestCases(TestCase):
             user = User.objects.get(id=data['user'])
             user_locations_count = Location.objects.filter(users__id=user.id).count()
 
-
-        response = client.post('/locations/', data, format='json')
+        response = client.post('/locations/?auth_token='+auth_token, data, format='json')
 
         if valid:
             self.assertTrue(response.status_code, status.HTTP_201_CREATED)
