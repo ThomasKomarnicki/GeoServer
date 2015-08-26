@@ -10,9 +10,7 @@ from geo_server import confidential
 class GeoTestCases(TestCase):
 
     def setUp(self):
-
         # assumes user with id == 2
-
         set_up_database()
 
     def test_geo(self):
@@ -74,6 +72,7 @@ class GeoTestCases(TestCase):
 
         if valid:
             user = User.objects.get(id=data['user'])
+            valid = user.auth_token == auth_token
             last_current_location = user.current_location
 
         response = client.post('/locationGuess/?auth_token='+auth_token, data, format='json')
@@ -99,6 +98,7 @@ class GeoTestCases(TestCase):
 
         if valid:
             user = User.objects.get(id=data['user'])
+            valid = user.auth_token == auth_token
             user_locations_count = Location.objects.filter(users__id=user.id).count()
 
         response = client.post('/locations/?auth_token='+auth_token, data, format='json')
@@ -231,13 +231,11 @@ def set_up_database():
     count = User.objects.aggregate(count=Count('id'))['count']
     while count < 5:
         user = User.objects.create(email='test'+str(count)+'@gmail.com')
-        # print "Creating User with id = "+str(user.id)
         count += 1
 
     count = Location.objects.aggregate(count=Count('id'))['count']
 
     while count < 50:
-        # print "creating Location "+str(count)
         location = Location.objects.create(lat=count, lon=count)
         location.users.add(User.objects.order_by('?').first())
         count += 1
