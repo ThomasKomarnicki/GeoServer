@@ -17,14 +17,13 @@ class GeoTestCases(TestCase):
 
     def test_geo(self):
         # need to be redone for auth tokens
-        valid_user = self._test_create_user()
-        # self._test_location_guess()
-        user = User.objects.order_by('?').first()
-        # self._test_location_guess({"user": user.id, "location": user.current_location, "lat": 10, "lon": 10})
-        # self._test_location_guess({"user": 569549945, "location": user.current_location, "lat": 10, "lon": 10})
-        # self._test_location_guess({"user": user.id, "location": 958597597, "lat": 10, "lon": 10})
-        # self._test_location_guess({"user": user.id, "location": user.current_location, "lat": 200, "lon": 200})
-        # self._test_location_guess({})
+        user = self._test_create_user()
+        # user = User.objects.order_by('?').first()
+        self._test_location_guess({"user": user.id, "location": user.current_location, "lat": 10, "lon": 10}, user.auth_token)
+        self._test_location_guess({"user": 569549945, "location": user.current_location, "lat": 10, "lon": 10}, user.auth_token)
+        self._test_location_guess({"user": user.id, "location": 958597597, "lat": 10, "lon": 10}, user.auth_token)
+        self._test_location_guess({"user": user.id, "location": user.current_location, "lat": 200, "lon": 200}, user.auth_token)
+        self._test_location_guess({}, user.auth_token)
 
         print "done testing location guesses:"
         print LocationGuess.objects.all()
@@ -67,7 +66,7 @@ class GeoTestCases(TestCase):
         serializer = UserSerializer(data=request.data)
         self.assertTrue(serializer.is_valid(raise_exception=False))
 
-    def _test_location_guess(self, data):
+    def _test_location_guess(self, data, auth_token):
         client = APIClient()
 
         serializer = LocationGuessSerializer(data=data)
@@ -77,7 +76,7 @@ class GeoTestCases(TestCase):
             user = User.objects.get(id=data['user'])
             last_current_location = user.current_location
 
-        response = client.post('/locationGuess/', data, format='json')
+        response = client.post('/locationGuess/?auth_token='+auth_token, data, format='json')
 
         if valid:
             self.assertTrue(response.status_code, status.HTTP_201_CREATED)
