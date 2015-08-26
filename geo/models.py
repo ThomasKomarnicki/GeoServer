@@ -22,7 +22,7 @@ class User(models.Model):
         return self._get_random_location(already_guessed_locations)
 
     def _get_random_location(self, already_guessed_locations):
-        possible_locations = Location.objects.exclude(user__id=self.id)
+        possible_locations = Location.objects.exclude(users__id=self.id)
         already_guessed_locations = already_guessed_locations[:-1]
         # print already_guessed_locations
         if 'None' not in already_guessed_locations:

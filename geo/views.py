@@ -94,7 +94,7 @@ def _save_location(request_data, user_id):
     close_locations_list = []
     for location in close_locations:
         distance = vincenty((float(location.lat),float(location.lon)),(lat,lon)).meters
-        print "location "+str(location) + " is " + str(distance) + " meters from the new location " + str(lat) + ", " + str(lon)
+        # print "location "+str(location) + " is " + str(distance) + " meters from the new location " + str(lat) + ", " + str(lon)
         if distance < 100:
             close_locations_list.append(location)
         elif distance < 500 and location.id == user_id:
@@ -105,14 +105,14 @@ def _save_location(request_data, user_id):
 
     close_location = _find_closest_location(close_locations_list,lat,lon)
     if close_location:
-        print "close location found"
+        # print "close location found"
         close_location.users.add(User.objects.get(id=user_id))
-        print "adding user " + str(user_id) + " to location " +str(close_location.id)
+        # print "adding user " + str(user_id) + " to location " +str(close_location.id)
         close_location.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     # only add location if not too close to any other locations
-    print "not close location"
+    # print "not close location"
     location = serializer.save()
     location.users.add(User.objects.get(id=user_id))
     location.save()
