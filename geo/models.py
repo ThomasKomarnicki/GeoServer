@@ -11,6 +11,7 @@ class User(models.Model):
     current_location = models.IntegerField()
     guessed_locations = models.CommaSeparatedIntegerField(max_length=64000, null=True, blank=True)
     auth_token = models.CharField(max_length=256)
+    total_score = models.IntegerField(default=0) # representative of progression / level
 
     def __unicode__(self):
 
