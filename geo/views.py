@@ -78,7 +78,7 @@ class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewse
 
 
 def _save_location(request_data, user_id):
-    request_data['date_added'] = timezone.now()
+    # request_data['date_added'] = timezone.now() # added as default in serializer
     serializer = LocationSerializer(data=request_data)
     if not serializer.is_valid():
         print "location not valid"

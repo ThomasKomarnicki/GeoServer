@@ -4,6 +4,7 @@ from django.db import models
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.db.models import Avg, Min
+from django.utils import timezone
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=False)
@@ -47,7 +48,7 @@ class LocationSerializer(serializers.ModelSerializer):
     best_guess_distance = serializers.ReadOnlyField(source='_get_best')
     lat = serializers.DecimalField(max_value=90, min_value=-90, max_digits=20, decimal_places=17)
     lon = serializers.DecimalField(max_value=180, min_value=-180, max_digits=20, decimal_places=17)
-    date_added = serializers.DateTimeField()
+    date_added = serializers.DateTimeField(default=timezone.now())
     id = serializers.ReadOnlyField()
 
     class Meta:
