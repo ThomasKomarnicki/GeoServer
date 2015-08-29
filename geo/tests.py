@@ -74,6 +74,7 @@ class GeoTestCases(TestCase):
         if valid:
             user = User.objects.get(id=data['user'])
             valid = user.auth_token == auth_token
+            last_score = user.total_score
             last_current_location = user.current_location
 
         response = client.post('/locationGuess/?auth_token='+auth_token, data, format='json')
@@ -85,7 +86,9 @@ class GeoTestCases(TestCase):
             self.assertNotEqual(last_current_location, int(user.current_location))
 
             self.assertTrue(LocationGuess.objects.filter(user__id=user.id).exists())
-            print LocationGuess.objects.all()
+            # print LocationGuess.objects.all()
+
+            self.assertTrue(last_score < user.total_score)
 
         else:
             self.assertTrue(response.status_code >= 400)

@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
     google_auth_id = models.CharField(max_length=50, null=True)
     current_location = serializers.IntegerField(required=False)
     guessed_locations = serializers.CharField(required=False)
-    level = serializers.Field(source='get_progression_level', read_only=True)
+    level = serializers.ReadOnlyField(source='get_progression_level', read_only=True)
 
     class Meta:
         model = User

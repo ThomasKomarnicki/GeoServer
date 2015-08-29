@@ -169,7 +169,7 @@ def determine_score(distance):
 
     distance_ranges.reverse()
 
-    print distance_ranges
+    # print distance_ranges
 
     score_range_index = 0
 
@@ -178,7 +178,7 @@ def determine_score(distance):
             score_range_index = i
             break
 
-    print "score_range_index: "+str(score_range_index)
+    # print "score_range_index: "+str(score_range_index)
 
     score_base = ((range_count-1) - score_range_index) * 10
     lower_bound = 0
@@ -186,12 +186,12 @@ def determine_score(distance):
         lower_bound = distance_ranges[score_range_index - 1]
 
     dist_range_diff = distance_ranges[score_range_index] - lower_bound
-    print "dist_range_diff: " + str(dist_range_diff)
+    # print "dist_range_diff: " + str(dist_range_diff)
     dist_score_diff = distance - lower_bound
-    print "dist_score_diff: "+ str(dist_score_diff)
+    # print "dist_score_diff: "+ str(dist_score_diff)
 
     percent_of_range = 1 - (dist_score_diff / dist_range_diff)
-    print "percent_of_range: "+str(percent_of_range)
+    # print "percent_of_range: "+str(percent_of_range)
 
     return math.ceil((score_base + (percent_of_range * float(10))) * (float(10)/float(range_count)))
 
