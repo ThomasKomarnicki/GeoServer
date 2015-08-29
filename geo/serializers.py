@@ -12,6 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
     google_auth_id = models.CharField(max_length=50, null=True)
     current_location = serializers.IntegerField(required=False)
     guessed_locations = serializers.CharField(required=False)
+    level = serializers.Field(source='get_progression_level',read_only=True)
 
     class Meta:
         model = User
@@ -78,8 +79,9 @@ class LocationGuessSerializer(serializers.ModelSerializer):
     location = LocationField(queryset=Location.objects.all())
     lat = serializers.DecimalField(max_value=90, min_value=-90, max_digits=20, decimal_places=17)
     lon = serializers.DecimalField(max_value=180, min_value=-180, max_digits=20, decimal_places=17)
+    score = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = LocationGuess
-        fields = ('user', 'location', 'lat', 'lon')
+        fields = ('user', 'location', 'lat', 'lon','score')
 

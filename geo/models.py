@@ -48,6 +48,11 @@ class User(models.Model):
 
         return possible_locations[random_index]
 
+    '''
+        scores are between 0 - 100
+    '''
+    def get_progression_level(self):
+        return self.total_score / 100
 
 
         # count = Location.objects.all().count()
@@ -132,7 +137,7 @@ class LocationGuess(models.Model):
     # guess lat and lon
     lat = models.DecimalField(max_digits=20, decimal_places=17)
     lon = models.DecimalField(max_digits=20, decimal_places=17)
-    
+    score = models.IntegerField()
     distance = models.IntegerField()
 
     def __unicode__(self):
@@ -142,8 +147,12 @@ class LocationGuess(models.Model):
     def save(self,**kwargs):
         if not self.distance:
             self.distance = 1
+        # TODO determine score
+
         super(LocationGuess, self).save(**kwargs)
         # TODO calculate distance between location and location guess lat lon
+
+
 
 
     # def __unicode__(self):
