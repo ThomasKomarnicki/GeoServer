@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-import confidential
+# import confidential
 import dj_database_url
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -93,20 +93,20 @@ ALLOWED_HOSTS = ['*']
 
 STATIC_ROOT = 'static'
 
-# DATABASES = {'default': dj_database_url.config()}
+DATABASES = {'default': dj_database_url.config()}
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'geo_server',
-        'USER': 'postgres',
-        'PASSWORD': confidential.get_database_password(),
-        'HOST': 'localhost',
-        'PORT': '',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'geo_server',
+#         'USER': 'postgres',
+#         'PASSWORD': confidential.get_database_password(),
+#         'HOST': 'localhost',
+#         'PORT': '',
+#     }
+# }
 
 
 # Internationalization
