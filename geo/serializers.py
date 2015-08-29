@@ -6,13 +6,14 @@ from django.core.exceptions import ValidationError
 from django.db.models import Avg, Min
 from django.utils import timezone
 
+
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=False)
     other_identifier = serializers.CharField(required=False,max_length=50)
     google_auth_id = models.CharField(max_length=50, null=True)
     current_location = serializers.IntegerField(required=False)
     guessed_locations = serializers.CharField(required=False)
-    level = serializers.Field(source='get_progression_level',read_only=True)
+    level = serializers.Field(source='get_progression_level', read_only=True)
 
     class Meta:
         model = User
@@ -42,9 +43,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 class LocationSerializer(serializers.ModelSerializer):
 
-    # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    # average_guess_distance = serializers.IntegerField(required=False)
-    # best_guess_distance = serializers.IntegerField(required=False)
     average_guess_distance = serializers.ReadOnlyField(source='_get_average')
     best_guess_distance = serializers.ReadOnlyField(source='_get_best')
     lat = serializers.DecimalField(max_value=90, min_value=-90, max_digits=20, decimal_places=17)

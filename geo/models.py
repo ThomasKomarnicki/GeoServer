@@ -1,8 +1,11 @@
 from django.db import models
 from random import randint
 import hashlib
+import math
 
-# Create your models here.
+EARTH_CIRCUMFERENCE = 40.075 * 1000000
+DISTANCE_RANGES = [78271.484375, 156542.96875, 313085.9375, 626171.875, 1252343.75, 2504687.5, 5009375.0, 10018750.0, 20037500.0]
+
 
 class User(models.Model):
     email = models.EmailField(null=True)
@@ -71,6 +74,7 @@ class User(models.Model):
         else:
             self.guessed_locations += str(self.current_location) + ','
         self.current_location = self.get_next_location().id
+        self.total_score += location_guess.score
         self.save()
 
     def save(self, **kwargs):
@@ -148,10 +152,48 @@ class LocationGuess(models.Model):
         if not self.distance:
             self.distance = 1
         # TODO determine score
+        self.score = determine_score(self.distance)
 
         super(LocationGuess, self).save(**kwargs)
         # TODO calculate distance between location and location guess lat lon
 
+
+def determine_score(distance):
+    if distance > EARTH_CIRCUMFERENCE / 2:
+        return 1  # this should be an error
+
+    distance_ranges = []
+    range_count = 15
+    for x in range(1, range_count):
+        distance_ranges.append(EARTH_CIRCUMFERENCE / math.pow(2,x))
+
+    distance_ranges.reverse()
+
+    print distance_ranges
+
+    score_range_index = 0
+
+    for i, distance_max in enumerate(distance_ranges):
+        if distance < distance_max:
+            score_range_index = i
+            break
+
+    print "score_range_index: "+str(score_range_index)
+
+    score_base = ((range_count-1) - score_range_index) * 10
+    lower_bound = 0
+    if score_range_index != 0:
+        lower_bound = distance_ranges[score_range_index - 1]
+
+    dist_range_diff = distance_ranges[score_range_index] - lower_bound
+    print "dist_range_diff: " + str(dist_range_diff)
+    dist_score_diff = distance - lower_bound
+    print "dist_score_diff: "+ str(dist_score_diff)
+
+    percent_of_range = 1 - (dist_score_diff / dist_range_diff)
+    print "percent_of_range: "+str(percent_of_range)
+
+    return math.ceil((score_base + (percent_of_range * float(10))) * (float(10)/float(range_count)))
 
 
 
