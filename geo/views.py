@@ -152,7 +152,6 @@ class LocationGuessViewSet(mixins.CreateModelMixin,
         if not all(name in serializer.initial_data for name in ['user', 'location', 'lat', 'lon']):
             return Response(data={"error": "invalid data"}, status=400)
 
-
         user_id = serializer.initial_data['user']
         auth_token = request.query_params.get('auth_token', None)
         if not _is_valid_auth_token(auth_token,user_id):
@@ -178,13 +177,12 @@ class LocationGuessViewSet(mixins.CreateModelMixin,
         user = User.objects.get(id=user_id)
         user.save_location_guess(location_guess)
         location_serializer = LocationSerializer(Location.objects.get(id=user.current_location))
+
+        response_data = {'new_location': location_serializer.data, 'location_guess_result':serializer.data}
         try:
-            return Response(location_serializer.data, status=status.HTTP_201_CREATED)
+            return Response(response_data, status=status.HTTP_201_CREATED)
         except:
             return HttpResponse(status=404)
-
-
-
 
 
 class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
