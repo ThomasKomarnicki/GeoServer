@@ -184,6 +184,9 @@ class LocationGuessViewSet(mixins.CreateModelMixin,
             return HttpResponse(status=404)
 
 
+
+
+
 class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
 
     queryset = User.objects.all()
@@ -210,6 +213,24 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
              return HttpResponse(status=400, content={"error": "no identifier"})
+
+    def retrieve(self, request, pk):
+        user_id = pk
+        auth_token = request.query_params.get('auth_token', None)
+        if not _is_valid_auth_token(auth_token,user_id):
+            return Response(status=403)
+
+        user = User.objects.get(id=pk);
+        serializer = UserSerializer(user)
+
+        data = serializer.data
+        del data['auth_token']
+        del data['email']
+        del data['other_identifier']
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
 
     def google_auth(self, request):
         data = request.data
