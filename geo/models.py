@@ -2,6 +2,7 @@ from django.db import models
 from random import randint
 import hashlib
 import math
+from geopy.distance import vincenty
 
 EARTH_CIRCUMFERENCE = 40.075 * 1000000
 DISTANCE_RANGES = [78271.484375, 156542.96875, 313085.9375, 626171.875, 1252343.75, 2504687.5, 5009375.0, 10018750.0, 20037500.0]
@@ -150,7 +151,7 @@ class LocationGuess(models.Model):
 
     def save(self,**kwargs):
         if not self.distance:
-            self.distance = 1
+            self.distance = vincenty((float(self.location.lat),float(self.location.lon)),(float(self).lat,float(self.lon))).meters
         # TODO determine score
         self.score = determine_score(self.distance)
 
