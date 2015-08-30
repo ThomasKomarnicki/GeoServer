@@ -164,7 +164,7 @@ def determine_score(distance):
         return 1  # this should be an error
 
     distance_ranges = []
-    range_count = 15
+    range_count = 12
     for x in range(1, range_count):
         distance_ranges.append(EARTH_CIRCUMFERENCE / math.pow(2,x))
 
