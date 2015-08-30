@@ -282,6 +282,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
     def locationGuesses(self, request,  pk=None):
         page = request.query_params.get('page',None)
         location_guesses = LocationGuess.objects.filter(user__id=pk).reverse().all()
+        location_guesses = location_guesses.reverse()
         try:
             paginator = Paginator(location_guesses,20)
             location_guesses = paginator.page(page)
@@ -300,6 +301,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         except:
             return Response({'error':'no user with id '+str(pk)},status=400)
         locations = Location.objects.filter(users=user).reverse().all()
+        locations = locations.reverse()
         page = request.query_params.get('page',None)
         try:
             paginator = Paginator(locations,20)
