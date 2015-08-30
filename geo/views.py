@@ -173,8 +173,6 @@ class LocationGuessViewSet(mixins.CreateModelMixin,
         if not serializer.is_valid():
             return Response(data={"error": "invalid data"}, status=400)
 
-
-
         location_guess = serializer.save()
 
         user = User.objects.get(id=user_id)

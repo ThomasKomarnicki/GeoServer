@@ -151,7 +151,7 @@ class LocationGuess(models.Model):
 
     def save(self,**kwargs):
         if not self.distance:
-            self.distance = vincenty((float(self.location.lat),float(self.location.lon)),(float(self).lat,float(self.lon))).meters
+            self.distance = vincenty((float(self.location.lat),float(self.location.lon)),(float(self.lat),float(self.lon))).meters
         # TODO determine score
         self.score = determine_score(self.distance)
 
