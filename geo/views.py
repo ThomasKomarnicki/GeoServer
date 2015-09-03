@@ -279,7 +279,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         return Response(data=location_serializer.data, status=200)
 
     @detail_route(methods=['get'], url_path='locationGuesses')
-    def locationGuesses(self, request,  pk=None):
+    def location_guesses(self, request,  pk=None):
         page = request.query_params.get('page',None)
         location_guesses = LocationGuess.objects.filter(user__id=pk).reverse().all()
         location_guesses = location_guesses.reverse()
@@ -293,6 +293,16 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         serializer = LocationGuessSerializer(location_guesses, many=True)
 
         return Response(serializer.data, status=200)
+
+    @detail_route(methods=['get'], url_path='profile_stats')
+    def profile_status(self, request, pk=None):
+        # best guess
+        # hardest location to guess
+        # easiest location to guess
+        # level
+        # total number of location guesses
+        # total number of locations
+        pass
 
     @detail_route(methods=['get'], url_path='locations')
     def locations(self, request,  pk=None):
