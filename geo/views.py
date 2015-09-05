@@ -335,7 +335,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         # total number of location guesses
         location_guess_number = LocationGuess.objects.filter(user_id=user.id).count()
         # total number of locations
-        locations_number = Location.objects.filter(user_id=user.id).count()
+        locations_number = Location.objects.filter(users__id=user.id).count()
         return Response({
             'best_guess':best_guess,
             'hardest_location':hardest_location,
