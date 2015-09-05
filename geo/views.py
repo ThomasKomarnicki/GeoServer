@@ -296,13 +296,41 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
 
     @detail_route(methods=['get'], url_path='profile_stats')
     def profile_status(self, request, pk=None):
+        if not User.objects.exists(id=pk):
+            return Response({'error': 'user does not exist'}, status=400)
+
+        user = User.objects.get(id=pk)
         # best guess
-        # hardest location to guess
-        # easiest location to guess
+        best_guess = LocationGuess.objects.filter(user_id=user.id).aggregate(Min('distance'))
+        # hardest location to guess, highest average distances
+        users_locations = Location.objects.filter(users__id=user.id)
+        hardest_location = None
+        for location in users_locations:
+            if not hardest_location:
+                hardest_location = location
+            elif LocationGuess.objects.filter(location_id=location.id).aggregate(Avg('distance')) > hardest_location.distance:
+                hardest_location = location
+        # easiest location to guess, lowest average distances
+        easiest_location = None
+        for location in users_locations:
+            if not easiest_location:
+                easiest_location = location
+            elif LocationGuess.objects.filter(location_id=location.id).aggregate(Avg('distance')) < easiest_location.distance:
+                easiest_location = location
         # level
+        level = user.get_progression_level()
         # total number of location guesses
+        location_guess_number = LocationGuess.objects.filter(user_id=user.id).count()
         # total number of locations
-        pass
+        locations_number = Location.objects.filter(user_id=user.id).count()
+        return Response({
+            'best_guess':best_guess,
+            'hardest_location':hardest_location,
+            'easiest_location': easiest_location,
+            'level': level,
+            'location_guess_count': location_guess_number,
+            'location_count': locations_number
+        }, status=200)
 
     @detail_route(methods=['get'], url_path='locations')
     def locations(self, request,  pk=None):

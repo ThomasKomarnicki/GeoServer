@@ -56,8 +56,7 @@ class User(models.Model):
         scores are between 0 - 100
     '''
     def get_progression_level(self):
-        return self.total_score / 100
-
+        return int(self.total_score / 100)
 
         # count = Location.objects.all().count()
         # random_index = randint(0, count - 1)
