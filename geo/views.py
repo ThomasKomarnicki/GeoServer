@@ -327,7 +327,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
                 easiest_location = location
             else:
                 avg = LocationGuess.objects.filter(location_id=location.id).aggregate(Avg('distance'))
-                if avg < easiest_location.distance:
+                if avg < easiest_location_distance:
                     easiest_location = location
                     easiest_location_distance = avg
         # level
