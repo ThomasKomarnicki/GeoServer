@@ -1,4 +1,4 @@
-from models import Location, LocationGuess, User
+from models import Location, LocationGuess, User, EARTH_CIRCUMFERENCE
 from geo.serializers import UserSerializer, LocationSerializer, LocationGuessSerializer
 from django.http import HttpResponse
 from rest_framework import viewsets
@@ -13,6 +13,7 @@ from django.utils import timezone
 from geopy.distance import vincenty
 
 LAT_LNG_DIF = 0.01  # ~1110 meters at the equator
+
 
 
 class LocationViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -309,18 +310,26 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         # hardest location to guess, highest average distances
         users_locations = Location.objects.filter(users__id=user.id)
         hardest_location = None
+        hardest_location_distance = 0
         for location in users_locations:
             if not hardest_location:
                 hardest_location = location
-            elif LocationGuess.objects.filter(location_id=location.id).aggregate(Avg('distance')) > hardest_location.distance:
-                hardest_location = location
+            else:
+                avg = LocationGuess.objects.filter(location_id=location.id).aggregate(Avg('distance'))
+                if avg > hardest_location_distance:
+                    hardest_location = location
+                    hardest_location_distance = avg
         # easiest location to guess, lowest average distances
         easiest_location = None
+        easiest_location_distance = EARTH_CIRCUMFERENCE
         for location in users_locations:
             if not easiest_location:
                 easiest_location = location
-            elif LocationGuess.objects.filter(location_id=location.id).aggregate(Avg('distance')) < easiest_location.distance:
-                easiest_location = location
+            else:
+                avg = LocationGuess.objects.filter(location_id=location.id).aggregate(Avg('distance'))
+                if avg < easiest_location.distance:
+                    easiest_location = location
+                    easiest_location_distance = avg
         # level
         level = user.get_progression_level()
         # total number of location guesses
