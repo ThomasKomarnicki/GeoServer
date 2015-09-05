@@ -109,7 +109,7 @@ class Location(models.Model):
     # best_guess_distance = models.IntegerField(default=0)
 
     def __unicode__(self):
-        return "\"location\":{\"id\":"+str(self.id)+"\"lat\":"+str(self.lat)+", \"lon\":"+str(+self.lon)+"}"
+        return "\"location\":{\"id\":"+str(self.id)+"\", lat\":"+str(self.lat)+", \"lon\":"+str(+self.lon)+"}"
 
     # @staticmethod
     # def get_new_location(user_id):
