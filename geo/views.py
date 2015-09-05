@@ -295,9 +295,13 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         return Response(serializer.data, status=200)
 
     @detail_route(methods=['get'], url_path='profile_stats')
-    def profile_status(self, request, pk=None):
-        if not User.objects.exists(id=pk):
+    def profile_stats(self, request, pk=None):
+        if not User.objects.filter(id=pk).exists():
             return Response({'error': 'user does not exist'}, status=400)
+
+        auth_token = request.query_params.get('auth_token', None)
+        if not _is_valid_auth_token(auth_token, pk):
+            return Response(data=403)
 
         user = User.objects.get(id=pk)
         # best guess
