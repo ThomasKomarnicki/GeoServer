@@ -307,18 +307,27 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         user = User.objects.get(id=pk)
         # best guess
         best_guess = LocationGuess.objects.filter(user_id=user.id).aggregate(Min('distance'))
+        best_guess = best_guess['distance__min']
+
+
         # hardest location to guess, highest average distances
         users_locations = Location.objects.filter(users__id=user.id)
+
+        # print LocationGuess.objects.all()
+
         hardest_location = None
         hardest_location_distance = 0
         for location in users_locations:
             if not hardest_location:
                 hardest_location = location
             else:
-                avg = LocationGuess.objects.filter(location_id=location.id).aggregate(Avg('distance'))
-                if avg > hardest_location_distance:
+                avg = LocationGuess.objects.filter(location=location.id).aggregate(Avg('distance'))['distance__avg']
+                print "hard location avg: " + str(avg)
+                if avg and avg > hardest_location_distance:
                     hardest_location = location
                     hardest_location_distance = avg
+
+
         # easiest location to guess, lowest average distances
         easiest_location = None
         easiest_location_distance = EARTH_CIRCUMFERENCE
@@ -326,17 +335,21 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
             if not easiest_location:
                 easiest_location = location
             else:
-                avg = LocationGuess.objects.filter(location_id=location.id).aggregate(Avg('distance'))
-                if avg < easiest_location_distance:
+                avg = LocationGuess.objects.filter(location=location.id).aggregate(Avg('distance'))['distance__avg']
+                print "easy location avg: " + str(avg)
+                if avg and avg < easiest_location_distance:
                     easiest_location = location
                     easiest_location_distance = avg
+        # if easiest_location_distance == EARTH_CIRCUMFERENCE:
+        #     easiest_location_distance = -1
+
         # level
         level = user.get_progression_level()
         # total number of location guesses
         location_guess_number = LocationGuess.objects.filter(user_id=user.id).count()
         # total number of locations
         locations_number = Location.objects.filter(users__id=user.id).count()
-        return Response({
+        data = {
             'best_guess':best_guess,
             'hardest_location': LocationSerializer(hardest_location).data,
             'hardest_location_avg': hardest_location_distance,
@@ -345,7 +358,10 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
             'level': level,
             'location_guess_count': location_guess_number,
             'location_count': locations_number
-        }, status=200)
+        }
+        print data
+        print "\n\n"
+        return Response(data, status=200)
 
     @detail_route(methods=['get'], url_path='locations')
     def locations(self, request,  pk=None):

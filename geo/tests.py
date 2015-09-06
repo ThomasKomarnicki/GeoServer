@@ -5,7 +5,6 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from serializers import LocationSerializer, LocationGuessSerializer, UserSerializer
 from geo_server import confidential
-from django.utils import timezone
 
 
 class GeoTestCases(TestCase):
@@ -15,6 +14,7 @@ class GeoTestCases(TestCase):
         set_up_database()
 
     def test_geo(self):
+
         # need to be redone for auth tokens
         user = self._test_create_user()
         # user = User.objects.order_by('?').first()
@@ -24,8 +24,8 @@ class GeoTestCases(TestCase):
         self._test_location_guess({"user": user.id, "location": user.current_location, "lat": 200, "lon": 200}, user.auth_token)
         self._test_location_guess({}, user.auth_token)
 
-        print "done testing location guesses:"
-        print LocationGuess.objects.all()
+        # print "done testing location guesses:"
+        # print LocationGuess.objects.all()
 
         # need to be refactored for auth tokens
         self._test_add_location({"user": user.id, "lat": 10, "lon": 10}, user.auth_token)
@@ -38,7 +38,18 @@ class GeoTestCases(TestCase):
 
         self._test_get_location_details(Location.objects.order_by('?').first())
 
-        self.test_locations_to_near_locations()
+        # self.test_locations_to_near_locations()
+
+        self._test_user_profile_stats()
+
+        # set up location guesses
+        count = 0
+        while count < 175:
+            user = User.objects.order_by('?').first()
+            self._test_location_guess({"user": user.id, "location": user.current_location, "lat": count/2, "lon": count}, user.auth_token)
+            count += 1
+
+        self._test_user_profile_stats()
 
     def _test_create_user(self):
         client = APIClient()
@@ -102,9 +113,9 @@ class GeoTestCases(TestCase):
 
         if valid:
             user = User.objects.get(id=data['user'])
-            print "test add location user validity check:"
-            print "user: "+ str(user)
-            print "given auth token: "+str(auth_token)
+            # print "test add location user validity check:"
+            # print "user: "+ str(user)
+            # print "given auth token: "+str(auth_token)
             valid = user.auth_token == auth_token
             user_locations_count = Location.objects.filter(users__id=user.id).count()
 
@@ -135,12 +146,12 @@ class GeoTestCases(TestCase):
         self.assertTrue('location_guesses' in data)
 
     def _test_get_location_guesses(self, user):
-        print "all location guesses:"
-        for location_guess in LocationGuess.objects.all():
-            print location_guess
+        # print "all location guesses:"
+        # for location_guess in LocationGuess.objects.all():
+        #     print location_guess
         request = self.client.get('/users/'+str(user.id)+'/locationGuesses/')
-        print "location guesses for user:"
-        print request
+        # print "location guesses for user:"
+        # print request
 
     # bypass view create location test
     def _test_location_guess_for_user(self):
@@ -232,6 +243,20 @@ class GeoTestCases(TestCase):
         response = views._save_location(data, users[4].id)
         # self.assertTrue(response.status_code == 400)
 
+    def _test_user_profile_stats(self):
+        # user = User.objects.all().first()
+        user = User.objects.all().order_by('?').first()
+
+        request = self.client.get('/users/'+str(user.id)+'/profile_stats/?auth_token='+str(user.auth_token))
+
+        # for i in range(0, 20):
+        #     user = User.objects.get(id=user.id)
+        #     self._test_location_guess({"user": user.id, "location": user.current_location, "lat": i, "lon": (i+2)}, user.auth_token)
+
+        # request = self.client.get('/users/'+str(user.id)+'/profile_stats/?auth_token='+str(user.auth_token))
+
+        # print "user profile status request: "
+        # print request
 
 
 def set_up_database():
