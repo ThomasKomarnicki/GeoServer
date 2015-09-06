@@ -318,30 +318,30 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         hardest_location = None
         hardest_location_distance = 0
         for location in users_locations:
-            if not hardest_location:
+            # if not hardest_location:
+            #     hardest_location = location
+            # else:
+            avg = LocationGuess.objects.filter(location=location.id).aggregate(Avg('distance'))['distance__avg']
+            print "hard location avg: " + str(avg)
+            if avg and avg > hardest_location_distance:
                 hardest_location = location
-            else:
-                avg = LocationGuess.objects.filter(location=location.id).aggregate(Avg('distance'))['distance__avg']
-                print "hard location avg: " + str(avg)
-                if avg and avg > hardest_location_distance:
-                    hardest_location = location
-                    hardest_location_distance = avg
+                hardest_location_distance = avg
 
 
         # easiest location to guess, lowest average distances
         easiest_location = None
         easiest_location_distance = EARTH_CIRCUMFERENCE
         for location in users_locations:
-            if not easiest_location:
+            # if not easiest_location:
+            #     easiest_location = location
+            # else:
+            avg = LocationGuess.objects.filter(location=location.id).aggregate(Avg('distance'))['distance__avg']
+            print "easy location avg: " + str(avg)
+            if avg and avg < easiest_location_distance:
                 easiest_location = location
-            else:
-                avg = LocationGuess.objects.filter(location=location.id).aggregate(Avg('distance'))['distance__avg']
-                print "easy location avg: " + str(avg)
-                if avg and avg < easiest_location_distance:
-                    easiest_location = location
-                    easiest_location_distance = avg
-        # if easiest_location_distance == EARTH_CIRCUMFERENCE:
-        #     easiest_location_distance = -1
+                easiest_location_distance = avg
+        if easiest_location_distance == EARTH_CIRCUMFERENCE:
+            easiest_location_distance = -1
 
         # level
         level = user.get_progression_level()
