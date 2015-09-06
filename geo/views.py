@@ -349,11 +349,16 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         location_guess_number = LocationGuess.objects.filter(user_id=user.id).count()
         # total number of locations
         locations_number = Location.objects.filter(users__id=user.id).count()
+
+        if hardest_location:
+            hardest_location = LocationSerializer(hardest_location).data
+        if easiest_location:
+            easiest_location = LocationSerializer(easiest_location).data
         data = {
             'best_guess':best_guess,
-            'hardest_location': LocationSerializer(hardest_location).data,
+            'hardest_location': hardest_location,
             'hardest_location_avg': hardest_location_distance,
-            'easiest_location': LocationSerializer(easiest_location).data,
+            'easiest_location': easiest_location,
             'easiest_location_avg': easiest_location_distance,
             'level': level,
             'location_guess_count': location_guess_number,
