@@ -306,8 +306,13 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
 
         user = User.objects.get(id=pk)
         # best guess
-        best_guess = LocationGuess.objects.filter(user_id=user.id).aggregate(Min('distance'))
-        best_guess = best_guess['distance__min']
+        best_guess = -1
+        for location_guess in LocationGuess.objects.filter(user_id=user.id).all():
+            if location_guess.distance < best_guess or best_guess == 1:
+                best_guess = location_guess.distance
+                best_guess_location = location_guess
+        # best_guess = LocationGuess.objects.filter(user_id=user.id).aggregate(Min('distance'))
+        # best_guess = best_guess['distance__min']
 
 
         # hardest location to guess, highest average distances
@@ -354,8 +359,11 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
             hardest_location = LocationSerializer(hardest_location).data
         if easiest_location:
             easiest_location = LocationSerializer(easiest_location).data
+        if best_guess_location:
+            best_guess_location = LocationSerializer(Location.objects.get(id=best_guess_location.location))
         data = {
-            'best_guess':best_guess,
+            'best_guess': best_guess,
+            'best_guess_location': best_guess_location,
             'hardest_location': hardest_location,
             'hardest_location_avg': hardest_location_distance,
             'easiest_location': easiest_location,
