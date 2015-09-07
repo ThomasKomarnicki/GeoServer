@@ -361,7 +361,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         if easiest_location:
             easiest_location = LocationSerializer(easiest_location).data
         if best_guess_location:
-            best_guess_location = LocationSerializer(best_guess_location.location)
+            best_guess_location = LocationSerializer(Location.objects.get(id=best_guess_location.location.id))
         data = {
             'best_guess': best_guess,
             'best_guess_location': best_guess_location,
