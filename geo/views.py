@@ -307,8 +307,9 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         user = User.objects.get(id=pk)
         # best guess
         best_guess = -1
+        best_guess_location = None
         for location_guess in LocationGuess.objects.filter(user_id=user.id).all():
-            if location_guess.distance < best_guess or best_guess == 1:
+            if location_guess.distance < best_guess or best_guess == -1:
                 best_guess = location_guess.distance
                 best_guess_location = location_guess
         # best_guess = LocationGuess.objects.filter(user_id=user.id).aggregate(Min('distance'))
