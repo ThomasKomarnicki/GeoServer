@@ -282,7 +282,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
     @detail_route(methods=['get'], url_path='locationGuesses')
     def location_guesses(self, request,  pk=None):
         page = request.query_params.get('page',None)
-        location_guesses = LocationGuess.objects.filter(user__id=pk).all().reverse()
+        location_guesses = LocationGuess.objects.filter(user__id=pk).order_by('id').reverse()
         # location_guesses = location_guesses.reverse()
         try:
             paginator = Paginator(location_guesses,20)
