@@ -282,8 +282,8 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
     @detail_route(methods=['get'], url_path='locationGuesses')
     def location_guesses(self, request,  pk=None):
         page = request.query_params.get('page',None)
-        location_guesses = LocationGuess.objects.filter(user__id=pk).reverse().all()
-        location_guesses = location_guesses.reverse()
+        location_guesses = LocationGuess.objects.filter(user__id=pk).all().reverse()
+        # location_guesses = location_guesses.reverse()
         try:
             paginator = Paginator(location_guesses,20)
             location_guesses = paginator.page(page)
@@ -292,6 +292,27 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         except EmptyPage:
             return Response([],status=200)
         serializer = LocationGuessSerializer(location_guesses, many=True)
+
+        return Response(serializer.data, status=200)
+
+    @detail_route(methods=['get'], url_path='locations')
+    def locations(self, request,  pk=None):
+        try:
+            user = User.objects.get(id=pk)
+        except:
+            return Response({'error':'no user with id '+str(pk)},status=400)
+        locations = Location.objects.filter(users=user).all().reverse()
+        # locations = locations.reverse()
+        page = request.query_params.get('page',None)
+        try:
+            paginator = Paginator(locations,20)
+            locations = paginator.page(page)
+        except PageNotAnInteger:
+            return Response({'error':'page is not an integer'},status=400)
+        except EmptyPage:
+            return Response([],status=200)
+
+        serializer = LocationSerializer(locations, many=True)
 
         return Response(serializer.data, status=200)
 
@@ -376,27 +397,6 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
         print data
         print "\n\n"
         return Response(data, status=200)
-
-    @detail_route(methods=['get'], url_path='locations')
-    def locations(self, request,  pk=None):
-        try:
-            user = User.objects.get(id=pk)
-        except:
-            return Response({'error':'no user with id '+str(pk)},status=400)
-        locations = Location.objects.filter(users=user).reverse().all()
-        locations = locations.reverse()
-        page = request.query_params.get('page',None)
-        try:
-            paginator = Paginator(locations,20)
-            locations = paginator.page(page)
-        except PageNotAnInteger:
-            return Response({'error':'page is not an integer'},status=400)
-        except EmptyPage:
-            return Response([],status=200)
-
-        serializer = LocationSerializer(locations, many=True)
-
-        return Response(serializer.data, status=200)
 
 def _is_valid_identifier(identifier):
     try:
