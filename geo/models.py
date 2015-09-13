@@ -3,6 +3,7 @@ from random import randint
 import hashlib
 import math
 from geopy.distance import vincenty
+import datetime
 
 EARTH_CIRCUMFERENCE = 40.075 * 1000000
 DISTANCE_RANGES = [78271.484375, 156542.96875, 313085.9375, 626171.875, 1252343.75, 2504687.5, 5009375.0, 10018750.0, 20037500.0]
@@ -104,7 +105,7 @@ class Location(models.Model):
     users = models.ManyToManyField(User)
     lat = models.DecimalField(max_digits=20, decimal_places=17)
     lon = models.DecimalField(max_digits=20, decimal_places=17)
-    date_added = models.DateTimeField(auto_now=True)
+    date_added = models.DateTimeField()
     # average_guess_distance = models.IntegerField(default=0)
     # best_guess_distance = models.IntegerField(default=0)
 
@@ -134,6 +135,10 @@ class Location(models.Model):
 
         self.average_guess_distance = total / count
 
+    def save(self, **kwargs):
+        if not self.id:
+            self.date_added = datetime.datetime.now()
+
 
 class LocationGuess(models.Model):
     user = models.ForeignKey(User, null=True)
@@ -143,12 +148,16 @@ class LocationGuess(models.Model):
     lon = models.DecimalField(max_digits=20, decimal_places=17)
     score = models.IntegerField()
     distance = models.IntegerField()
+    date_added = models.DateTimeField()
 
     def __unicode__(self):
         return "user: "+str(self.user.id)+", location = "+str(self.location.id)\
                + "lat lon =" + str(self.lat) + " " + str(self.lon)
 
     def save(self,**kwargs):
+        if not self.id:
+            self.date_added = datetime.datetime.now()
+
         if not self.distance:
             self.distance = vincenty((float(self.location.lat),float(self.location.lon)),(float(self.lat),float(self.lon))).meters
         # TODO determine score
