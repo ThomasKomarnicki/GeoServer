@@ -10,12 +10,12 @@ DISTANCE_RANGES = [78271.484375, 156542.96875, 313085.9375, 626171.875, 1252343.
 
 class User(models.Model):
     email = models.EmailField(null=True)
-    other_identifier = models.CharField(max_length=50, null=True)
-    google_auth_id = models.CharField(max_length=50,null=True, blank=True)
+    other_identifier = models.CharField(max_length=50, null=True, blank=True)
+    google_auth_id = models.CharField(max_length=50, null=True, blank=True)
     current_location = models.IntegerField()
     guessed_locations = models.CommaSeparatedIntegerField(max_length=64000, null=True, blank=True)
     auth_token = models.CharField(max_length=256)
-    total_score = models.IntegerField(default=0) # representative of progression / level
+    total_score = models.IntegerField(default=0)  # representative of progression / level
 
     def __unicode__(self):
 
