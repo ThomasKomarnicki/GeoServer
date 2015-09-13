@@ -135,9 +135,11 @@ class Location(models.Model):
 
         self.average_guess_distance = total / count
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
         if not self.id:
             self.date_added = datetime.datetime.now()
+
+        return super(Location, self).save(*args, **kwargs)
 
 
 class LocationGuess(models.Model):
@@ -163,7 +165,7 @@ class LocationGuess(models.Model):
         # TODO determine score
         self.score = determine_score(self.distance)
 
-        super(LocationGuess, self).save(**kwargs)
+        return super(LocationGuess, self).save(**kwargs)
         # TODO calculate distance between location and location guess lat lon
 
 
