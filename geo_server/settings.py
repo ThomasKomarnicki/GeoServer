@@ -91,8 +91,6 @@ WSGI_APPLICATION = 'geo_server.wsgi.application'
 
 ALLOWED_HOSTS = ['*']
 
-STATIC_ROOT = 'static'
-
 DATABASES = {'default': dj_database_url.config()}
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
