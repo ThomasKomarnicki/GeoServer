@@ -26,3 +26,4 @@ simplejson==3.7.3
 six==1.9.0
 static3==0.6.1
 uritemplate==0.6
+whitenoise==2.0.4
