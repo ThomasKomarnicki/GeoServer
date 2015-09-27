@@ -417,14 +417,23 @@ def _is_valid_auth_token(auth_token,user_id):
 def slideshow_info(request):
     data = {
         'url_prefix': '/static/slide_show_images/',
-        'images': [
-            '1448',
-            '1852',
-            '1934',
-            '2321',
-            '7005',
-            '7007',
-        ]
+        'portrait_images': [
+            '1448.png',
+            '1852.png',
+            '1934.png',
+            '2321.png',
+            '7005.png',
+            '7007.png',
+        ],
+        'landscape_images': [
+            '1448_land.png',
+            '1852_land.png',
+            '1934_land.png',
+            '2321_land.png',
+            '7005_land.png',
+            '7007_land.png',
+        ],
+
     }
 
     return Response(data, status=200)
