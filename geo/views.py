@@ -411,3 +411,19 @@ def _is_valid_auth_token(auth_token,user_id):
         return user.auth_token == auth_token
     except:
         return False
+
+
+def slideshow_info(self, request):
+    data = {
+        'url_prefix': '/static/slide_show_images/',
+        'images': [
+            '1448',
+            '1852',
+            '1934',
+            '2321',
+            '7005',
+            '7007',
+        ]
+    }
+
+    return Response(data,status=200)

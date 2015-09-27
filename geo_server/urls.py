@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf.urls import url, include
 from rest_framework import routers
 from django.contrib import admin
-from geo.views import UserViewSet, LocationViewSet, LocationGuessViewSet
+from geo.views import UserViewSet, LocationViewSet, LocationGuessViewSet, slideshow_info
 
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -27,7 +27,8 @@ google_auth_view = UserViewSet.as_view({'post':'google_auth'})
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^users/google_auth',google_auth_view,name='google_auth')
+    url(r'^users/google_auth',google_auth_view, name='google_auth'),
+    url(r'^slideshow_info',slideshow_info, name='slideshow_info'),
 ]
 
 urlpatterns += router.urls
