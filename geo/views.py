@@ -413,7 +413,7 @@ def _is_valid_auth_token(auth_token,user_id):
         return False
 
 
-@api_view
+@api_view(['GET'])
 def slideshow_info(request):
     data = {
         'url_prefix': '/static/slide_show_images/',
