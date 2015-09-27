@@ -413,7 +413,7 @@ def _is_valid_auth_token(auth_token,user_id):
         return False
 
 
-def slideshow_info(self, request):
+def slideshow_info(request):
     data = {
         'url_prefix': '/static/slide_show_images/',
         'images': [
