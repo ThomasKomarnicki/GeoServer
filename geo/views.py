@@ -11,6 +11,7 @@ from django.db.models import Avg, Min
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 from geopy.distance import vincenty
+from rest_framework.serializers import ValidationError
 
 LAT_LNG_DIF = 0.01  # ~1110 meters at the equator
 
@@ -258,7 +259,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
             serializer = self.get_serializer(data={'google_auth_id': userid, 'email': idinfo['email']})
             try:
                 serializer.is_valid(raise_exception=True)
-            except e:
+            except ValidationError as e:
                 print e
 
             user = serializer.save()
