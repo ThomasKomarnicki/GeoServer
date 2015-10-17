@@ -256,7 +256,11 @@ class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.G
             user.save()
         else:
             serializer = self.get_serializer(data={'google_auth_id': userid, 'email': idinfo['email']})
-            serializer.is_valid()
+            try:
+                serializer.is_valid(raise_exception=True)
+            except e:
+                print e
+
             user = serializer.save()
 
         serializer = UserSerializer(user)
