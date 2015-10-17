@@ -14,6 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
     current_location = serializers.IntegerField(required=False)
     guessed_locations = serializers.CharField(required=False)
     level = serializers.ReadOnlyField(source='get_progression_level', read_only=True)
+    auth_token = serializers.ReadOnlyField(read_only=True)
 
     class Meta:
         model = User
